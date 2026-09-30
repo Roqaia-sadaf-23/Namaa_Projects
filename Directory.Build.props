@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <!-- Keep the backend on the requested LTS runtime regardless of the installed SDK. -->
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+  </PropertyGroup>
+</Project>
