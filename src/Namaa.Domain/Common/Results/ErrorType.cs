@@ -1,4 +1,4 @@
-namespace Namaa.Application.Common.Results;
+namespace Namaa.Domain.Common.Results;
 
 public enum ErrorType
 {

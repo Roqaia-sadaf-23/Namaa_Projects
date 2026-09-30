@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Namaa.Api.Contracts;
-using Namaa.Application.Common.Results;
+using Namaa.Domain.Common.Results;
 
 namespace Namaa.Api.Extensions;
 
 public static class ResultActionResultExtensions
 {
-    // Controllers stay thin: they return an application Result and this adapter selects the HTTP response.
     public static IActionResult ToActionResult(this Result result, ControllerBase controller) =>
         result.IsSuccess ? controller.Ok() : ToFailureActionResult(result.Error, controller);
 
@@ -17,18 +15,40 @@ public static class ResultActionResultExtensions
             ? controller.Ok(result.Value)
             : ToFailureActionResult(result.Error, controller);
 
-    private static IActionResult ToFailureActionResult(Error error, ControllerBase controller)
+    private static ObjectResult ToFailureActionResult(Error error, ControllerBase controller)
     {
-        var response = new ApiErrorResponse(error.Code, error.Message, error.Type.ToString());
-
-        return error.Type switch
+        var statusCode = error.Type switch
         {
-            ErrorType.Validation => controller.BadRequest(response),
-            ErrorType.NotFound => controller.NotFound(response),
-            ErrorType.Conflict => controller.Conflict(response),
-            ErrorType.Unauthorized => controller.Unauthorized(response),
-            ErrorType.Forbidden => controller.Forbid(),
-            _ => controller.StatusCode(StatusCodes.Status500InternalServerError, response)
+            ErrorType.Validation => StatusCodes.Status400BadRequest,
+            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+            ErrorType.Forbidden => StatusCodes.Status403Forbidden,
+            ErrorType.NotFound => StatusCodes.Status404NotFound,
+            ErrorType.Conflict => StatusCodes.Status409Conflict,
+            _ => StatusCodes.Status500InternalServerError
+        };
+
+        var problemDetails = new ProblemDetails
+        {
+            Status = statusCode,
+            Title = GetTitle(error.Type),
+            Detail = error.Message,
+            Instance = controller.HttpContext.Request.Path
+        };
+        problemDetails.Extensions["code"] = error.Code;
+
+        return new ObjectResult(problemDetails)
+        {
+            StatusCode = statusCode
         };
     }
+
+    private static string GetTitle(ErrorType errorType) => errorType switch
+    {
+        ErrorType.Validation => "Validation failed.",
+        ErrorType.Unauthorized => "Unauthorized.",
+        ErrorType.Forbidden => "Forbidden.",
+        ErrorType.NotFound => "Resource not found.",
+        ErrorType.Conflict => "Conflict.",
+        _ => "An operation failed."
+    };
 }

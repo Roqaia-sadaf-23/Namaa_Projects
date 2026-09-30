@@ -1,5 +1,6 @@
 using Namaa.Api.Middleware;
 using Namaa.Application;
+using Namaa.Infrastructure;
  
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddAuthorization();
 builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
  
 var app = builder.Build();
 

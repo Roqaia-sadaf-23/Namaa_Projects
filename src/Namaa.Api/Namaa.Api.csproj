@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Namaa.Application\Namaa.Application.csproj" />
+    <ProjectReference Include="..\Namaa.Infrastructure\Namaa.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -14,6 +15,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>3058b4ec-2f7f-4e1c-b506-c4eef68fe15a</UserSecretsId>
   </PropertyGroup>
 
 </Project>
