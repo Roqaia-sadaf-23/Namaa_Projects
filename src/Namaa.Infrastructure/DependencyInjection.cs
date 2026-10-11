@@ -28,6 +28,9 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(serviceProvider =>
             serviceProvider.GetRequiredService<NamaaDbContext>());
         services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<IQuotationRepository, QuotationRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }
