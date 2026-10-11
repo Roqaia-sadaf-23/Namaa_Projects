@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Namaa.Application\Namaa.Application.csproj" />
+    <ProjectReference Include="..\Namaa.Domain\Namaa.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

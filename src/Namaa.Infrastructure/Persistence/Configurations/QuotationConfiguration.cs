@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Namaa.Domain.Entities;
+using Namaa.Domain.Enums;
 
 namespace Namaa.Infrastructure.Persistence.Configurations;
 
@@ -22,7 +23,7 @@ public sealed class QuotationConfiguration : IEntityTypeConfiguration<Quotation>
         builder.Property(e => e.CustomerId).HasColumnName("CustomerId").HasColumnType("bigint").IsRequired();
         builder.Property(e => e.QuotationNumber).HasColumnName("QuotationNumber").HasColumnType("varchar(30)").HasMaxLength(30).IsUnicode(false).IsRequired();
         builder.Property(e => e.Title).HasColumnName("Title").HasColumnType("nvarchar(250)").HasMaxLength(250).IsRequired();
-        builder.Property(e => e.Status).HasColumnName("Status").HasColumnType("varchar(20)").HasMaxLength(20).IsUnicode(false).HasConversion<string>().HasDefaultValueSql("('Draft')").IsRequired();
+        builder.Property(e => e.Status).HasColumnName("Status").HasColumnType("varchar(20)").HasMaxLength(20).IsUnicode(false).HasConversion<string>().HasDefaultValueSql("('Draft')").HasSentinel(QuotationStatus.Draft).IsRequired();
         builder.Property(e => e.IssueDate).HasColumnName("IssueDate").HasColumnType("date").HasDefaultValueSql("(CONVERT([date],sysutcdatetime()))").IsRequired();
         builder.Property(e => e.ValidUntil).HasColumnName("ValidUntil").HasColumnType("date").IsRequired(false);
         builder.Property(e => e.SubTotal).HasColumnName("SubTotal").HasColumnType("decimal(19,4)").HasPrecision(19, 4).HasDefaultValueSql("((0))").IsRequired();

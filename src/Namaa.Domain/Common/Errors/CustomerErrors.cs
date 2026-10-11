@@ -9,8 +9,8 @@ public static class CustomerErrors
         "The requested customer was not found.",
         ErrorType.NotFound);
 
-    public static readonly Error DuplicateNationalId = new(
-        "Customers.DuplicateNationalId",
-        "A customer with the same national ID already exists.",
+    public static readonly Error DuplicateCustomerCode = new(
+        "Customers.DuplicateCustomerCode",
+        "A customer with the same customer code already exists.",
         ErrorType.Conflict);
 }

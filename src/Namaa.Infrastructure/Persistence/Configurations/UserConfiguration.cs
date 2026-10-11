@@ -21,7 +21,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(e => e.Email).HasColumnName("Email").HasColumnType("nvarchar(254)").HasMaxLength(254).IsRequired(false);
         builder.Property(e => e.PhoneNumber).HasColumnName("PhoneNumber").HasColumnType("nvarchar(30)").HasMaxLength(30).IsRequired(false);
         builder.Property(e => e.PasswordHash).HasColumnName("PasswordHash").HasColumnType("nvarchar(500)").HasMaxLength(500).IsRequired();
-        builder.Property(e => e.IsActive).HasColumnName("IsActive").HasColumnType("bit").HasDefaultValueSql("((1))").IsRequired();
+        builder.Property(e => e.IsActive).HasColumnName("IsActive").HasColumnType("bit").HasDefaultValueSql("((1))").HasSentinel(true).IsRequired();
         builder.Property(e => e.CreatedAt).HasColumnName("CreatedAt").HasColumnType("datetime2(0)").HasDefaultValueSql("(sysutcdatetime())").IsRequired();
         builder.Property(e => e.UpdatedAt).HasColumnName("UpdatedAt").HasColumnType("datetime2(0)").IsRequired(false);
         builder.Property(e => e.RowVersion).HasColumnName("RowVersion").HasColumnType("timestamp").IsRowVersion().IsConcurrencyToken().IsRequired();

@@ -16,7 +16,7 @@ public sealed class CostCenterConfiguration : IEntityTypeConfiguration<CostCente
         builder.Property(e => e.ParentCostCenterId).HasColumnName("ParentCostCenterId").HasColumnType("bigint").IsRequired(false);
         builder.Property(e => e.BranchId).HasColumnName("BranchId").HasColumnType("bigint").IsRequired(false);
         builder.Property(e => e.Description).HasColumnName("Description").HasColumnType("nvarchar(500)").HasMaxLength(500).IsRequired(false);
-        builder.Property(e => e.IsActive).HasColumnName("IsActive").HasColumnType("bit").HasDefaultValueSql("((1))").IsRequired();
+        builder.Property(e => e.IsActive).HasColumnName("IsActive").HasColumnType("bit").HasDefaultValueSql("((1))").HasSentinel(true).IsRequired();
         builder.Property(e => e.CreatedAt).HasColumnName("CreatedAt").HasColumnType("datetime2(0)").HasDefaultValueSql("(sysdatetime())").IsRequired();
         builder.Property(e => e.UpdatedAt).HasColumnName("UpdatedAt").HasColumnType("datetime2(0)").IsRequired(false);
         builder.Property(e => e.RowVersion).HasColumnName("RowVersion").HasColumnType("timestamp").IsRowVersion().IsConcurrencyToken().IsRequired();

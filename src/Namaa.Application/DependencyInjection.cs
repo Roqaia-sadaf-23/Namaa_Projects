@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Namaa.Application.Abstractions.Behaviors;
 
 namespace Namaa.Application;
 
@@ -10,7 +11,10 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddMediatR(configuration =>
-            configuration.RegisterServicesFromAssemblyContaining<ApplicationAssemblyMarker>());
+        {
+            configuration.RegisterServicesFromAssemblyContaining<ApplicationAssemblyMarker>();
+            configuration.AddOpenBehavior(typeof(ValidationBehavior<,>));
+        });
         services.AddValidatorsFromAssemblyContaining<ApplicationAssemblyMarker>();
 
         return services;

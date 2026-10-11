@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Namaa.Domain.Entities;
+using Namaa.Domain.Enums;
 
 namespace Namaa.Infrastructure.Persistence.Configurations;
 
@@ -25,8 +26,8 @@ public sealed class ProjectTaskConfiguration : IEntityTypeConfiguration<ProjectT
         builder.Property(e => e.AssignedToUserId).HasColumnName("AssignedToUserId").HasColumnType("bigint").IsRequired(false);
         builder.Property(e => e.Title).HasColumnName("Title").HasColumnType("nvarchar(250)").HasMaxLength(250).IsRequired();
         builder.Property(e => e.Description).HasColumnName("Description").HasColumnType("nvarchar(2000)").HasMaxLength(2000).IsRequired(false);
-        builder.Property(e => e.Status).HasColumnName("Status").HasColumnType("varchar(20)").HasMaxLength(20).IsUnicode(false).HasConversion<string>().HasDefaultValueSql("('ToDo')").IsRequired();
-        builder.Property(e => e.Priority).HasColumnName("Priority").HasColumnType("varchar(10)").HasMaxLength(10).IsUnicode(false).HasConversion<string>().HasDefaultValueSql("('Medium')").IsRequired();
+        builder.Property(e => e.Status).HasColumnName("Status").HasColumnType("varchar(20)").HasMaxLength(20).IsUnicode(false).HasConversion<string>().HasDefaultValueSql("('ToDo')").HasSentinel(ProjectTaskStatus.ToDo).IsRequired();
+        builder.Property(e => e.Priority).HasColumnName("Priority").HasColumnType("varchar(10)").HasMaxLength(10).IsUnicode(false).HasConversion<string>().HasDefaultValueSql("('Medium')").HasSentinel(TaskPriority.Medium).IsRequired();
         builder.Property(e => e.StartDate).HasColumnName("StartDate").HasColumnType("date").IsRequired(false);
         builder.Property(e => e.DueDate).HasColumnName("DueDate").HasColumnType("date").IsRequired(false);
         builder.Property(e => e.CompletedAt).HasColumnName("CompletedAt").HasColumnType("datetime2(0)").IsRequired(false);

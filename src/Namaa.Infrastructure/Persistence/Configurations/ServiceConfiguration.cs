@@ -15,7 +15,7 @@ public sealed class ServiceConfiguration : IEntityTypeConfiguration<Service>
         builder.Property(e => e.Category).HasColumnName("Category").HasColumnType("nvarchar(100)").HasMaxLength(100).IsRequired(false);
         builder.Property(e => e.Description).HasColumnName("Description").HasColumnType("nvarchar(1000)").HasMaxLength(1000).IsRequired(false);
         builder.Property(e => e.DefaultPrice).HasColumnName("DefaultPrice").HasColumnType("decimal(19,4)").HasPrecision(19, 4).IsRequired();
-        builder.Property(e => e.IsActive).HasColumnName("IsActive").HasColumnType("bit").HasDefaultValueSql("((1))").IsRequired();
+        builder.Property(e => e.IsActive).HasColumnName("IsActive").HasColumnType("bit").HasDefaultValueSql("((1))").HasSentinel(true).IsRequired();
         builder.Property(e => e.CreatedAt).HasColumnName("CreatedAt").HasColumnType("datetime2(0)").HasDefaultValueSql("(sysdatetime())").IsRequired();
         builder.Property(e => e.UpdatedAt).HasColumnName("UpdatedAt").HasColumnType("datetime2(0)").IsRequired(false);
         builder.Property(e => e.RowVersion).HasColumnName("RowVersion").HasColumnType("timestamp").IsRowVersion().IsConcurrencyToken().IsRequired();

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Namaa.Domain.Entities;
+using Namaa.Domain.Enums;
 
 namespace Namaa.Infrastructure.Persistence.Configurations;
 
@@ -30,7 +31,7 @@ public sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.Property(e => e.StartDate).HasColumnName("StartDate").HasColumnType("date").IsRequired(false);
         builder.Property(e => e.EndDate).HasColumnName("EndDate").HasColumnType("date").IsRequired(false);
         builder.Property(e => e.ActualCompletionDate).HasColumnName("ActualCompletionDate").HasColumnType("date").IsRequired(false);
-        builder.Property(e => e.Status).HasColumnName("Status").HasColumnType("varchar(20)").HasMaxLength(20).IsUnicode(false).HasConversion<string>().HasDefaultValueSql("('Planned')").IsRequired();
+        builder.Property(e => e.Status).HasColumnName("Status").HasColumnType("varchar(20)").HasMaxLength(20).IsUnicode(false).HasConversion<string>().HasDefaultValueSql("('Planned')").HasSentinel(ProjectStatus.Planned).IsRequired();
         builder.Property(e => e.ProgressPercentage).HasColumnName("ProgressPercentage").HasColumnType("decimal(5,2)").HasPrecision(5, 2).HasDefaultValueSql("((0))").IsRequired();
         builder.Property(e => e.BudgetAmount).HasColumnName("BudgetAmount").HasColumnType("decimal(19,4)").HasPrecision(19, 4).HasDefaultValueSql("((0))").IsRequired();
         builder.Property(e => e.CreatedByUserId).HasColumnName("CreatedByUserId").HasColumnType("bigint").IsRequired();

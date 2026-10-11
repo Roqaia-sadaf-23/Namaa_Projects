@@ -22,7 +22,7 @@ public sealed class NotificationConfiguration : IEntityTypeConfiguration<Notific
         builder.Property(e => e.Message).HasColumnName("Message").HasColumnType("nvarchar(1000)").HasMaxLength(1000).IsRequired();
         builder.Property(e => e.EntityType).HasColumnName("EntityType").HasColumnType("varchar(50)").HasMaxLength(50).IsUnicode(false).IsRequired(false);
         builder.Property(e => e.EntityId).HasColumnName("EntityId").HasColumnType("bigint").IsRequired(false);
-        builder.Property(e => e.IsRead).HasColumnName("IsRead").HasColumnType("bit").HasDefaultValueSql("((0))").IsRequired();
+        builder.Property(e => e.IsRead).HasColumnName("IsRead").HasColumnType("bit").HasDefaultValueSql("((0))").HasSentinel(false).IsRequired();
         builder.Property(e => e.CreatedAt).HasColumnName("CreatedAt").HasColumnType("datetime2(0)").HasDefaultValueSql("(sysutcdatetime())").IsRequired();
         builder.Property(e => e.ReadAt).HasColumnName("ReadAt").HasColumnType("datetime2(0)").IsRequired(false);
         builder.HasIndex(e => new { e.UserId, e.IsRead, e.CreatedAt }, "IX_Notifications_User_Unread").IsDescending(false, false, true).IncludeProperties(e => new { e.Title, e.EntityType, e.EntityId, e.ReadAt });

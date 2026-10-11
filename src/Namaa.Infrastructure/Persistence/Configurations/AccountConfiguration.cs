@@ -20,8 +20,8 @@ public sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
         builder.Property(e => e.AccountName).HasColumnName("AccountName").HasColumnType("nvarchar(200)").HasMaxLength(200).IsRequired();
         builder.Property(e => e.ParentAccountId).HasColumnName("ParentAccountId").HasColumnType("bigint").IsRequired(false);
         builder.Property(e => e.AccountType).HasColumnName("AccountType").HasColumnType("varchar(20)").HasMaxLength(20).IsUnicode(false).IsRequired();
-        builder.Property(e => e.IsPostingAllowed).HasColumnName("IsPostingAllowed").HasColumnType("bit").HasDefaultValueSql("((1))").IsRequired();
-        builder.Property(e => e.IsActive).HasColumnName("IsActive").HasColumnType("bit").HasDefaultValueSql("((1))").IsRequired();
+        builder.Property(e => e.IsPostingAllowed).HasColumnName("IsPostingAllowed").HasColumnType("bit").HasDefaultValueSql("((1))").HasSentinel(true).IsRequired();
+        builder.Property(e => e.IsActive).HasColumnName("IsActive").HasColumnType("bit").HasDefaultValueSql("((1))").HasSentinel(true).IsRequired();
         builder.Property(e => e.Description).HasColumnName("Description").HasColumnType("nvarchar(500)").HasMaxLength(500).IsRequired(false);
         builder.Property(e => e.CreatedAt).HasColumnName("CreatedAt").HasColumnType("datetime2(0)").HasDefaultValueSql("(sysdatetime())").IsRequired();
         builder.Property(e => e.UpdatedAt).HasColumnName("UpdatedAt").HasColumnType("datetime2(0)").IsRequired(false);

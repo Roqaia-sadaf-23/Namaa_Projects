@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using Namaa.Application.Abstractions.Persistence;
 using Namaa.Domain.Entities;
 
 namespace Namaa.Infrastructure.Persistence;
 
-public sealed class NamaaDbContext : DbContext
+public sealed class NamaaDbContext : DbContext, IApplicationDbContext
 {
     public NamaaDbContext(DbContextOptions<NamaaDbContext> options)
         : base(options)
