@@ -54,14 +54,14 @@ public sealed class CustomersController(ISender sender) : ControllerBase
 
     [HttpGet]
     [ProducesResponseType<IReadOnlyList<CustomerDto>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<CustomerDto>>> GetAll(
+    public async Task<IActionResult> GetAll(
         CancellationToken cancellationToken)
     {
-        var customers = await sender.Send(
+        var result = await sender.Send(
             new GetCustomersQuery(),
             cancellationToken);
 
-        return Ok(customers);
+        return result.ToActionResult(this);
     }
 
     [HttpPut("{id:long}")]
