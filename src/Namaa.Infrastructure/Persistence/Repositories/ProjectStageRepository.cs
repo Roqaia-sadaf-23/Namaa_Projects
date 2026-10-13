@@ -6,6 +6,13 @@ namespace Namaa.Infrastructure.Persistence.Repositories;
 
 public sealed class ProjectStageRepository(NamaaDbContext dbContext) : IProjectStageRepository
 {
+    public Task<bool> ExistsByIdAsync(
+        long id,
+        CancellationToken cancellationToken = default) =>
+        dbContext.ProjectStages
+            .AsNoTracking()
+            .AnyAsync(stage => stage.Id == id, cancellationToken);
+
     public Task<ProjectStage?> FindByIdAsync(
         long projectId,
         long id,
