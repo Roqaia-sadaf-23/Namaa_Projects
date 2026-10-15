@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Expenses.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Expenses.Queries.GetExpenseById;public sealed record GetExpenseByIdQuery(long Id):IRequest<Result<ExpenseDto>>;

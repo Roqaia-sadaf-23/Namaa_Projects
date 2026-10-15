@@ -1,0 +1,1 @@
+namespace Namaa.Api.Contracts.Accounts;public sealed record UpdateAccountRequest(string AccountName,string AccountType,bool IsPostingAllowed,string? Description,long? ParentAccountId);

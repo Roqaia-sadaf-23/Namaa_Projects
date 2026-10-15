@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Users.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Users.Commands.UpdateUser;public sealed record UpdateUserCommand(long Id,byte RoleId,string FullName,string? Email,string? PhoneNumber,bool IsActive):IRequest<Result<UserDto>>;

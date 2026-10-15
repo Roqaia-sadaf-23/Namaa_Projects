@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Payments.Commands.UpdatePayment;public sealed class UpdatePaymentCommandValidator:AbstractValidator<UpdatePaymentCommand>{public UpdatePaymentCommandValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}

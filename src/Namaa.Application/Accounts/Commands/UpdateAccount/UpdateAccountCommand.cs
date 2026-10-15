@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Accounts.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Accounts.Commands.UpdateAccount;public sealed record UpdateAccountCommand(long Id,string AccountName,string AccountType,bool IsPostingAllowed,string? Description,long? ParentAccountId):IRequest<Result<AccountDto>>;

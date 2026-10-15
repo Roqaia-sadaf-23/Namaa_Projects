@@ -4,6 +4,7 @@ using Namaa.Api.Contracts.Projects;
 using Namaa.Api.Extensions;
 using Namaa.Application.Projects.Commands.CreateProject;
 using Namaa.Application.Projects.Commands.UpdateProject;
+using Namaa.Application.Projects.Commands.ChangeProjectStatus;
 using Namaa.Application.Projects.Dtos;
 using Namaa.Application.Projects.Queries.GetProjectById;
 using Namaa.Application.Projects.Queries.GetProjects;
@@ -14,6 +15,15 @@ namespace Namaa.Api.Controllers;
 [Route("api/projects")]
 public sealed class ProjectsController(ISender sender) : ControllerBase
 {
+    [HttpPost("{id:long}/status")]
+    public async Task<IActionResult> ChangeStatus(
+        long id,
+        Namaa.Api.Contracts.Projects.ChangeProjectStatusRequest request,
+        CancellationToken cancellationToken) =>
+        (await sender.Send(
+            new ChangeProjectStatusCommand(id, request.Status, request.ChangedByUserId, request.Reason),
+            cancellationToken)).ToActionResult(this);
+
     [HttpPost]
     [ProducesResponseType<ProjectDto>(StatusCodes.Status201Created)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]

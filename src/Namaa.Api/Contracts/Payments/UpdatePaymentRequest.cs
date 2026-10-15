@@ -1,0 +1,1 @@
+namespace Namaa.Api.Contracts.Payments;public sealed record UpdatePaymentRequest(DateTime PaymentDate,Namaa.Domain.Enums.PaymentMethod PaymentMethod,decimal Amount,string? ReferenceNumber,string? Notes);

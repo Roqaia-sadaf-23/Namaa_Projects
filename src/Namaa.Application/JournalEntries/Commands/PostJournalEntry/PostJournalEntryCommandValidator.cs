@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.JournalEntries.Commands.PostJournalEntry;public sealed class PostJournalEntryCommandValidator:AbstractValidator<PostJournalEntryCommand>{public PostJournalEntryCommandValidator(){RuleFor(x=>x.Id).GreaterThan(0);RuleFor(x=>x.PostedByUserId).GreaterThan(0);}}

@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Expenses.Queries.GetExpenseById;public sealed class GetExpenseByIdQueryValidator:AbstractValidator<GetExpenseByIdQuery>{public GetExpenseByIdQueryValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}

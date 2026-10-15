@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.CostCenters.Queries.GetCostCenterById;public sealed class GetCostCenterByIdQueryValidator:AbstractValidator<GetCostCenterByIdQuery>{public GetCostCenterByIdQueryValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}

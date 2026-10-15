@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.PurchaseInvoices.Commands.UpdatePurchaseInvoice;public sealed class UpdatePurchaseInvoiceCommandValidator:AbstractValidator<UpdatePurchaseInvoiceCommand>{public UpdatePurchaseInvoiceCommandValidator(){RuleFor(x=>x.Id).GreaterThan(0);RuleFor(x=>x.DueDate).GreaterThanOrEqualTo(x=>x.IssueDate).When(x=>x.DueDate.HasValue);}}

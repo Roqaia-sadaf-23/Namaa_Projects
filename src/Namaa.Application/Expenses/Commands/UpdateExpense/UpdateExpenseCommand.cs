@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Expenses.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Expenses.Commands.UpdateExpense;public sealed record UpdateExpenseCommand(long Id,DateTime ExpenseDate,string Category,string Description,decimal Amount,long? ProjectId):IRequest<Result<ExpenseDto>>;

@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Payments.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Payments.Queries.GetPayments;public sealed record GetPaymentsQuery:IRequest<Result<IReadOnlyList<PaymentDto>>>;

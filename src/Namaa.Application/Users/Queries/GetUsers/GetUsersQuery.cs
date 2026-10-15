@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Users.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Users.Queries.GetUsers;public sealed record GetUsersQuery:IRequest<Result<IReadOnlyList<UserDto>>>;

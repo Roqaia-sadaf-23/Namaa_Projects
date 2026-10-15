@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Expenses.Commands.CreateExpense;public sealed class CreateExpenseCommandValidator:AbstractValidator<CreateExpenseCommand>{public CreateExpenseCommandValidator(){RuleFor(x=>x.ExpenseNumber).NotEmpty().MaximumLength(30);}}

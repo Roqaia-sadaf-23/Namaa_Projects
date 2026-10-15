@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.PaymentVouchers.Queries.GetPaymentVoucherById;public sealed class GetPaymentVoucherByIdQueryValidator:AbstractValidator<GetPaymentVoucherByIdQuery>{public GetPaymentVoucherByIdQueryValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}

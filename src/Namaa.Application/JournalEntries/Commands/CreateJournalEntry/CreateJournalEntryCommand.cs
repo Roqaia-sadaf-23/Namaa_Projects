@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.JournalEntries.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.JournalEntries.Commands.CreateJournalEntry;public sealed record CreateJournalEntryCommand(string EntryNumber,DateTime EntryDate,long CreatedByUserId,string? Description,string? SourceType,long? SourceId):IRequest<Result<JournalEntryDto>>;

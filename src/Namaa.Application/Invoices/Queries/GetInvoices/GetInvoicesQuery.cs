@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Invoices.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Invoices.Queries.GetInvoices;public sealed record GetInvoicesQuery:IRequest<Result<IReadOnlyList<InvoiceDto>>>;

@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Accounts.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Accounts.Commands.CreateAccount;public sealed record CreateAccountCommand(string AccountCode,string AccountName,string AccountType,bool IsPostingAllowed,string? Description,long? ParentAccountId):IRequest<Result<AccountDto>>;

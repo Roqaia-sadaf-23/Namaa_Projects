@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Accounts.Commands.CreateAccount;public sealed class CreateAccountCommandValidator:AbstractValidator<CreateAccountCommand>{public CreateAccountCommandValidator(){RuleFor(x=>x.AccountCode).NotEmpty().MaximumLength(30);}}

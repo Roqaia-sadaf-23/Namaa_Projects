@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Expenses.Commands.UpdateExpense;public sealed class UpdateExpenseCommandValidator:AbstractValidator<UpdateExpenseCommand>{public UpdateExpenseCommandValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}

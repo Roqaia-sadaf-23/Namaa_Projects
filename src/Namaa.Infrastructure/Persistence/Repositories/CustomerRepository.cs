@@ -28,6 +28,12 @@ public sealed class CustomerRepository(NamaaDbContext dbContext) : ICustomerRepo
         dbContext.Customers
             .SingleOrDefaultAsync(customer => customer.Id == id, cancellationToken);
 
+    public Task<Customer?> FindByIdWithContactsAsync(long id, CancellationToken cancellationToken = default) =>
+        dbContext.Customers.AsNoTracking().Include(customer => customer.Contacts).SingleOrDefaultAsync(customer => customer.Id == id, cancellationToken);
+
+    public Task<Customer?> FindForUpdateWithContactsAsync(long id, CancellationToken cancellationToken = default) =>
+        dbContext.Customers.Include(customer => customer.Contacts).SingleOrDefaultAsync(customer => customer.Id == id, cancellationToken);
+
     public async Task<IReadOnlyList<Customer>> GetAllAsync(
         CancellationToken cancellationToken = default) =>
         await dbContext.Customers

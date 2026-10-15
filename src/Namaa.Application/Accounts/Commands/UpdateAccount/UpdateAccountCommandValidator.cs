@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Accounts.Commands.UpdateAccount;public sealed class UpdateAccountCommandValidator:AbstractValidator<UpdateAccountCommand>{public UpdateAccountCommandValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}

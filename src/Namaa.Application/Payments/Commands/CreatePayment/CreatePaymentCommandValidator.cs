@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Payments.Commands.CreatePayment;public sealed class CreatePaymentCommandValidator:AbstractValidator<CreatePaymentCommand>{public CreatePaymentCommandValidator(){RuleFor(x=>x.PaymentNumber).NotEmpty().MaximumLength(30);}}

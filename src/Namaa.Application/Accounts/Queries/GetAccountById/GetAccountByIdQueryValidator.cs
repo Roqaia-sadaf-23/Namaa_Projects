@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Accounts.Queries.GetAccountById;public sealed class GetAccountByIdQueryValidator:AbstractValidator<GetAccountByIdQuery>{public GetAccountByIdQueryValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}

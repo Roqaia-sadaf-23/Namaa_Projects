@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.CostCenters.Commands.CreateCostCenter;public sealed class CreateCostCenterCommandValidator:AbstractValidator<CreateCostCenterCommand>{public CreateCostCenterCommandValidator(){RuleFor(x=>x.CostCenterCode).NotEmpty().MaximumLength(30);}}

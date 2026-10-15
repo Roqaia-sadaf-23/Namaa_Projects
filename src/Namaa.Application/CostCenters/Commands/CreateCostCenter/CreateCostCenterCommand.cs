@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.CostCenters.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.CostCenters.Commands.CreateCostCenter;public sealed record CreateCostCenterCommand(string CostCenterCode,string Name,string? Description,long? ParentCostCenterId,long? BranchId):IRequest<Result<CostCenterDto>>;

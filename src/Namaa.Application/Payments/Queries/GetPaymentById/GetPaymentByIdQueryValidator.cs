@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Payments.Queries.GetPaymentById;public sealed class GetPaymentByIdQueryValidator:AbstractValidator<GetPaymentByIdQuery>{public GetPaymentByIdQueryValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}

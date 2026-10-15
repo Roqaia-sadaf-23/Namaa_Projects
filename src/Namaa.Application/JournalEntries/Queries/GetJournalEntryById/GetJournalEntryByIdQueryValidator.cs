@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.JournalEntries.Queries.GetJournalEntryById;public sealed class GetJournalEntryByIdQueryValidator:AbstractValidator<GetJournalEntryByIdQuery>{public GetJournalEntryByIdQueryValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}

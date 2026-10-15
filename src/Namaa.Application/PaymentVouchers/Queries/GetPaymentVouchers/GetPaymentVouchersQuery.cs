@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.PaymentVouchers.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.PaymentVouchers.Queries.GetPaymentVouchers;public sealed record GetPaymentVouchersQuery:IRequest<Result<IReadOnlyList<PaymentVoucherDto>>>;

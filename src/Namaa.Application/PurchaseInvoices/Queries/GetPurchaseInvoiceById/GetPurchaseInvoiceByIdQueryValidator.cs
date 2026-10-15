@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.PurchaseInvoices.Queries.GetPurchaseInvoiceById;public sealed class GetPurchaseInvoiceByIdQueryValidator:AbstractValidator<GetPurchaseInvoiceByIdQuery>{public GetPurchaseInvoiceByIdQueryValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}

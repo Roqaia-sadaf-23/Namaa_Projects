@@ -1,0 +1,4 @@
+using Namaa.Domain.Common.Results;
+namespace Namaa.Domain.Common.Errors;
+public static class QuotationErrors{public static readonly Error NotFound=new("Quotations.NotFound","The quotation was not found.",ErrorType.NotFound);public static readonly Error DuplicateNumber=new("Quotations.DuplicateNumber","The quotation number already exists.",ErrorType.Conflict);public static readonly Error CustomerNotFound=new("Quotations.CustomerNotFound","The customer was not found.",ErrorType.NotFound);public static readonly Error UserNotFound=new("Quotations.UserNotFound","The user was not found.",ErrorType.NotFound);public static readonly Error ServiceNotFound=new("Quotations.ServiceNotFound","The service was not found.",ErrorType.NotFound);public static readonly Error NotDraft=new("Quotations.NotDraft","Only draft quotations can be edited.",ErrorType.Conflict);}
+

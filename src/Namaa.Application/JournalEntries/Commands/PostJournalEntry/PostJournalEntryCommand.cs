@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.JournalEntries.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.JournalEntries.Commands.PostJournalEntry;public sealed record PostJournalEntryCommand(long Id,long PostedByUserId,DateTime PostedAt):IRequest<Result<JournalEntryDto>>;

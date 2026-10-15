@@ -1,0 +1,1 @@
+using Namaa.Domain.Entities;namespace Namaa.Application.Abstractions.Persistence;public interface IAuditLogRepository{Task<AuditLog?>FindByIdAsync(long id,CancellationToken cancellationToken=default);Task<IReadOnlyList<AuditLog>>GetAllAsync(long? userId,string? entityType,DateTime? fromDate,DateTime? toDate,CancellationToken cancellationToken=default);}

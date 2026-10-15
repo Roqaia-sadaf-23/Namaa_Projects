@@ -1,0 +1,4 @@
+using MediatR;using Namaa.Application.Abstractions.Persistence;using Namaa.Application.CustomerContacts.Dtos;using Namaa.Domain.Common.Errors;using Namaa.Domain.Common.Results;
+namespace Namaa.Application.CustomerContacts.Queries.GetCustomerContactById;
+public sealed class GetCustomerContactByIdQueryHandler(ICustomerRepository repository):IRequestHandler<GetCustomerContactByIdQuery,Result<CustomerContactDto>>{public async Task<Result<CustomerContactDto>> Handle(GetCustomerContactByIdQuery request,CancellationToken cancellationToken){var customer=await repository.FindByIdWithContactsAsync(request.CustomerId,cancellationToken);var contact=customer?.Contacts.SingleOrDefault(x=>x.Id==request.Id);return contact is null?Result.Failure<CustomerContactDto>(CustomerContactErrors.NotFound):Result.Success(CustomerContactDto.FromEntity(contact));}}
+

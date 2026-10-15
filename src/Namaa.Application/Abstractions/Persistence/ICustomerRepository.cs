@@ -16,6 +16,9 @@ public interface ICustomerRepository
         long id,
         CancellationToken cancellationToken = default);
 
+    Task<Customer?> FindByIdWithContactsAsync(long id, CancellationToken cancellationToken = default);
+    Task<Customer?> FindForUpdateWithContactsAsync(long id, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<Customer>> GetAllAsync(
         CancellationToken cancellationToken = default);
 

@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Payments.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Payments.Commands.UpdatePayment;public sealed record UpdatePaymentCommand(long Id,DateTime PaymentDate,Namaa.Domain.Enums.PaymentMethod PaymentMethod,decimal Amount,string? ReferenceNumber,string? Notes):IRequest<Result<PaymentDto>>;

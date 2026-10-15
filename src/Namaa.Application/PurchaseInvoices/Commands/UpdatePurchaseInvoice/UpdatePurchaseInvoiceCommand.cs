@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.PurchaseInvoices.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.PurchaseInvoices.Commands.UpdatePurchaseInvoice;public sealed record UpdatePurchaseInvoiceCommand(long Id,DateTime IssueDate, DateTime? DueDate, string? SupplierInvoiceNumber, string? Notes):IRequest<Result<PurchaseInvoiceDto>>;

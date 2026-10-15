@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Accounts.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Accounts.Queries.GetAccountById;public sealed record GetAccountByIdQuery(long Id):IRequest<Result<AccountDto>>;

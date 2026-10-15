@@ -28,9 +28,25 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(serviceProvider =>
             serviceProvider.GetRequiredService<NamaaDbContext>());
         services.AddScoped<ICustomerRepository, CustomerRepository>();
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+        services.AddScoped<IJournalEntryRepository, JournalEntryRepository>();
+        services.AddScoped<IPurchaseInvoiceRepository, PurchaseInvoiceRepository>();
+        services.AddScoped<IBranchRepository, BranchRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<ICostCenterRepository, CostCenterRepository>();
+        services.AddScoped<IExpenseRepository, ExpenseRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IPaymentVoucherRepository, PaymentVoucherRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IServiceRepository, ServiceRepository>();
+        services.AddScoped<ISupplierRepository, SupplierRepository>();
         services.AddScoped<IProjectFileRepository, ProjectFileRepository>();
         services.AddScoped<IProjectMemberRepository, ProjectMemberRepository>();
+        services.AddScoped<IProjectCorrespondenceRepository, ProjectCorrespondenceRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<IProjectStatusHistoryRepository, ProjectStatusHistoryRepository>();
         services.AddScoped<IProjectStageRepository, ProjectStageRepository>();
         services.AddScoped<IProjectTaskRepository, ProjectTaskRepository>();
         services.AddScoped<IQuotationRepository, QuotationRepository>();

@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.JournalEntries.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.JournalEntries.Queries.GetJournalEntries;public sealed record GetJournalEntriesQuery:IRequest<Result<IReadOnlyList<JournalEntryDto>>>;

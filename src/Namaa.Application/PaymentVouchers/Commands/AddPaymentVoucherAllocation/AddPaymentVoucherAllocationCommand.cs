@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.PaymentVouchers.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.PaymentVouchers.Commands.AddPaymentVoucherAllocation;public sealed record AddPaymentVoucherAllocationCommand(long PaymentVoucherId,long PurchaseInvoiceId,decimal AllocatedAmount):IRequest<Result<PaymentVoucherAllocationDto>>;

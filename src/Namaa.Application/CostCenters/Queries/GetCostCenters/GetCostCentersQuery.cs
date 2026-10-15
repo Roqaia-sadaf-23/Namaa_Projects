@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.CostCenters.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.CostCenters.Queries.GetCostCenters;public sealed record GetCostCentersQuery:IRequest<Result<IReadOnlyList<CostCenterDto>>>;

@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Invoices.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Invoices.Queries.GetInvoiceById;public sealed record GetInvoiceByIdQuery(long Id):IRequest<Result<InvoiceDto>>;

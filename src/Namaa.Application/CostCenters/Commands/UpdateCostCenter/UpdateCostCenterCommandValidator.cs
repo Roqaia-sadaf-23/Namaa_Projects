@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.CostCenters.Commands.UpdateCostCenter;public sealed class UpdateCostCenterCommandValidator:AbstractValidator<UpdateCostCenterCommand>{public UpdateCostCenterCommandValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}
