@@ -1,1 +1,1 @@
-using FluentValidation;namespace Namaa.Application.Payments.Commands.PostPayment;public sealed class PostPaymentCommandValidator:AbstractValidator<PostPaymentCommand>{public PostPaymentCommandValidator(){RuleFor(x=>x.Id).GreaterThan(0);RuleFor(x=>x.PostedByUserId).GreaterThan(0);}}
+using FluentValidation;namespace Namaa.Application.Payments.Commands.PostPayment;public sealed class PostPaymentCommandValidator:AbstractValidator<PostPaymentCommand>{public PostPaymentCommandValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}

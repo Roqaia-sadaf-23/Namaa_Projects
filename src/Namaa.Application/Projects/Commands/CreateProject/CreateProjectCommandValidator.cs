@@ -20,8 +20,6 @@ public sealed class CreateProjectCommandValidator : AbstractValidator<CreateProj
             .GreaterThanOrEqualTo(0)
             .PrecisionScale(19, 4, false);
 
-        RuleFor(command => command.CreatedByUserId).GreaterThan(0);
-
         RuleFor(command => command.SourceQuotationId)
             .GreaterThan(0)
             .When(command => command.SourceQuotationId.HasValue);

@@ -21,7 +21,7 @@ public sealed class ProjectsController(ISender sender) : ControllerBase
         Namaa.Api.Contracts.Projects.ChangeProjectStatusRequest request,
         CancellationToken cancellationToken) =>
         (await sender.Send(
-            new ChangeProjectStatusCommand(id, request.Status, request.ChangedByUserId, request.Reason),
+            new ChangeProjectStatusCommand(id, request.Status, request.Reason),
             cancellationToken)).ToActionResult(this);
 
     [HttpPost]
@@ -33,13 +33,11 @@ public sealed class ProjectsController(ISender sender) : ControllerBase
         CreateProjectRequest request,
         CancellationToken cancellationToken)
     {
-        // TODO: Source CreatedByUserId from authenticated user claims when authentication is implemented.
         var command = new CreateProjectCommand(
             request.CustomerId,
             request.ProjectCode,
             request.Name,
             request.BudgetAmount,
-            request.CreatedByUserId,
             request.SourceQuotationId,
             request.ProjectManagerId,
             request.Description,

@@ -7,7 +7,6 @@ public sealed class CreateProjectFileCommandValidator : AbstractValidator<Create
     public CreateProjectFileCommandValidator()
     {
         RuleFor(command => command.ProjectId).GreaterThan(0);
-        RuleFor(command => command.UploadedByUserId).GreaterThan(0);
 
         RuleFor(command => command.FileName)
             .NotEmpty()

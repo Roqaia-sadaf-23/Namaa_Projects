@@ -1,1 +1,1 @@
-namespace Namaa.Api.Contracts.PurchaseInvoices;public sealed record CreatePurchaseInvoiceRequest(long SupplierId, string PurchaseInvoiceNumber, DateTime IssueDate, long CreatedByUserId, long? ProjectId, string? SupplierInvoiceNumber, DateTime? DueDate, string? Notes);
+namespace Namaa.Api.Contracts.PurchaseInvoices;public sealed record CreatePurchaseInvoiceRequest(long SupplierId, string PurchaseInvoiceNumber, DateTime IssueDate, long? ProjectId, string? SupplierInvoiceNumber, DateTime? DueDate, string? Notes);

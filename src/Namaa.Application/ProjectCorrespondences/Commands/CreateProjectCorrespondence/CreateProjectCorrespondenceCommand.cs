@@ -4,5 +4,5 @@ using Namaa.Domain.Common.Results;
 
 namespace Namaa.Application.ProjectCorrespondences.Commands.CreateProjectCorrespondence;
 
-public sealed record CreateProjectCorrespondenceCommand(long ProjectId, string CorrespondenceType, string Subject, DateTime CorrespondenceDate, long CreatedByUserId, string? ReferenceNumber, string? Notes) : IRequest<Result<ProjectCorrespondenceDto>>;
+public sealed record CreateProjectCorrespondenceCommand(long ProjectId, string CorrespondenceType, string Subject, DateTime CorrespondenceDate, string? ReferenceNumber, string? Notes) : IRequest<Result<ProjectCorrespondenceDto>>;
 

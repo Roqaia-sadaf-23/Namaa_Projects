@@ -23,11 +23,9 @@ public sealed class ProjectTasksController(ISender sender) : ControllerBase
         CreateProjectTaskRequest request,
         CancellationToken cancellationToken)
     {
-        // TODO: Source CreatedByUserId from authenticated user claims when authentication is implemented.
         var command = new CreateProjectTaskCommand(
             projectId,
             request.Title,
-            request.CreatedByUserId,
             request.Priority,
             request.Description,
             request.StartDate,

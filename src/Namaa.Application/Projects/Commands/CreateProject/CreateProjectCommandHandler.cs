@@ -1,5 +1,7 @@
 using MediatR;
+using Namaa.Application.Abstractions.Authentication;
 using Namaa.Application.Abstractions.Persistence;
+using Namaa.Application.Common.Errors;
 using Namaa.Application.Projects.Dtos;
 using Namaa.Domain.Common.Errors;
 using Namaa.Domain.Common.Results;
@@ -12,6 +14,7 @@ public sealed class CreateProjectCommandHandler(
     ICustomerRepository customerRepository,
     IQuotationRepository quotationRepository,
     IUserRepository userRepository,
+    ICurrentUser currentUser,
     IApplicationDbContext dbContext)
     : IRequestHandler<CreateProjectCommand, Result<ProjectDto>>
 {
@@ -19,6 +22,9 @@ public sealed class CreateProjectCommandHandler(
         CreateProjectCommand request,
         CancellationToken cancellationToken)
     {
+        if (!currentUser.IsAuthenticated || currentUser.UserId is not long actorUserId)
+            return Result.Failure<ProjectDto>(ApplicationErrors.Unauthenticated);
+
         if (await projectRepository.ExistsByCodeAsync(
                 request.ProjectCode,
                 cancellationToken))
@@ -34,7 +40,7 @@ public sealed class CreateProjectCommandHandler(
         }
 
         if (!await userRepository.ExistsByIdAsync(
-                request.CreatedByUserId,
+                actorUserId,
                 cancellationToken))
         {
             return Result.Failure<ProjectDto>(ProjectErrors.CreatedByUserNotFound);
@@ -70,7 +76,7 @@ public sealed class CreateProjectCommandHandler(
             request.ProjectCode,
             request.Name,
             request.BudgetAmount,
-            request.CreatedByUserId,
+            actorUserId,
             request.SourceQuotationId,
             request.ProjectManagerId,
             request.Description,

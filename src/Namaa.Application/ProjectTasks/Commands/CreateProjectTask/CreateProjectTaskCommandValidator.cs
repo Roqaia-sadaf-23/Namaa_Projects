@@ -12,7 +12,6 @@ public sealed class CreateProjectTaskCommandValidator : AbstractValidator<Create
             .NotEmpty()
             .MaximumLength(250);
 
-        RuleFor(command => command.CreatedByUserId).GreaterThan(0);
         RuleFor(command => command.Priority).IsInEnum();
         RuleFor(command => command.Description).MaximumLength(2000);
 

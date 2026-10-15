@@ -4,7 +4,6 @@ namespace Namaa.Api.Contracts.ProjectTasks;
 
 public sealed record CreateProjectTaskRequest(
     string Title,
-    long CreatedByUserId,
     TaskPriority Priority,
     string? Description,
     DateTime? StartDate,

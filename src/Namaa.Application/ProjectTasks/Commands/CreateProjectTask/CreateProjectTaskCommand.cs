@@ -8,7 +8,6 @@ namespace Namaa.Application.ProjectTasks.Commands.CreateProjectTask;
 public sealed record CreateProjectTaskCommand(
     long ProjectId,
     string Title,
-    long CreatedByUserId,
     TaskPriority Priority,
     string? Description,
     DateTime? StartDate,

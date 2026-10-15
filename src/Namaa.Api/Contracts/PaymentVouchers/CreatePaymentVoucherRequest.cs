@@ -1,1 +1,1 @@
-namespace Namaa.Api.Contracts.PaymentVouchers;public sealed record CreatePaymentVoucherRequest(string VoucherNumber,DateTime VoucherDate,string PaymentMethod,decimal Amount,long PaidByUserId,long? SupplierId,string? BeneficiaryName,long? ProjectId,string? ReferenceNumber,string? Notes);
+namespace Namaa.Api.Contracts.PaymentVouchers;public sealed record CreatePaymentVoucherRequest(string VoucherNumber,DateTime VoucherDate,string PaymentMethod,decimal Amount,long? SupplierId,string? BeneficiaryName,long? ProjectId,string? ReferenceNumber,string? Notes);

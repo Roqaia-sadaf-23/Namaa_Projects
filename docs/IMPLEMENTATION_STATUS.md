@@ -87,23 +87,53 @@ Expected missing, duplicate, parent mismatch, invalid workflow state, unbalanced
 
 Repositories or aggregate loading enforce parent scope for project stages, tasks, files, members, correspondences, status history, customer contacts, notifications, and all newly aggregate-managed child data. Quotation items/terms, invoice items, purchase-invoice items, journal lines, and voucher allocations are loaded and mutated only through their parent aggregate.
 
-## Authentication and authorization foundation
+## Authentication status
 
 - Email is the persisted login identity; there is no username field. Login failure does not distinguish an unknown email from an invalid password.
 - Password verification uses ASP.NET Core Identity's versioned PBKDF2 password hasher. Password hashes remain internal and never appear in API DTOs.
 - JWT access tokens contain only the user identifier, optional email, role claims, and a token identifier. Configuration keys are `Jwt:Issuer`, `Jwt:Audience`, `Jwt:SigningKey`, `Jwt:AccessTokenMinutes`, and `Jwt:RefreshTokenDays`; the signing key is intentionally absent from tracked settings and is validated at startup.
 - Refresh tokens are cryptographically random, SHA-256 hashed into the existing unique `char(64)` column, rotated on refresh, linked through `ReplacedById`, and revoked on logout.
 - `ICurrentUser` exposes only `UserId`, `IsAuthenticated`, and role names. The API adapter reads standard identifier and role claims without leaking `HttpContext` into Application.
-- Authentication is required for Users, Roles, Audit Logs, Accounts, Cost Centers, Expenses, Invoices, Journal Entries, Payments, Payment Vouchers, Purchase Invoices, Notifications, Project Files, and fixed business-workflow actions. Exact business role names/policies remain unresolved, so no fabricated role policy was applied.
 - Swagger has a Bearer/JWT security definition. The middleware order is authentication, authorization, then endpoint mapping.
+
+## Authorization status
+
+- No authoritative role names exist in source, schema, seed data, or business documentation. No role names were invented.
+- Central policy constants are `CanManageProjects`, `CanManageCrmSales`, `CanManageFinance`, `CanPostJournalEntries`, `CanManageUsers`, `CanManageRoles`, `CanManageProcurement`, `CanViewNotifications`, and `CanViewAuditLogs`.
+- Until product owners map persisted role names to capabilities, every policy requires an authenticated user only. Role claims are already emitted and ASP.NET Core role authorization remains available for the future mapping.
+- Every business controller in the five documented modules is protected through a centralized controller-to-policy convention. Authentication endpoints remain anonymous. Journal posting receives the additional `CanPostJournalEntries` policy, and every explicit workflow action receives its module policy.
+- Project Management protection covers Projects, Stages, Tasks, Files, Members, Correspondences, and Status History. CRM & Sales covers Customers, Contacts, Services, and Quotations. Finance covers Accounts, Invoices, Payments, Vouchers, Expenses, Journal Entries, and Cost Centers. HR covers Users and Roles. Procurement & Administration covers Suppliers, Purchase Invoices, Branches, Notifications, and Audit Logs.
+
+## CurrentUser actor migration
+
+The following persisted actor identities now come only from `ICurrentUser.UserId`; their API request fields and command properties were removed:
+
+- Project creator and project-status changer.
+- Project-task creator, project-file uploader, and project-correspondence creator.
+- Quotation creator and quotation approver.
+- Invoice creator and expense creator.
+- Payment receiver/recorder and payment poster.
+- Payment-voucher payer/creator and voucher poster.
+- Journal-entry creator and poster.
+- Purchase-invoice creator and poster.
+
+Each affected handler returns the reusable `ApplicationErrors.Unauthenticated` Result error when invoked without a current authenticated user. Project status history, quotation approval, and all posting audit fields now record the JWT user identifier rather than a client assertion.
+
+The following user IDs intentionally remain request-supplied because they identify business targets rather than the caller: `ProjectManagerId`, `AssignedToUserId`, project-member `UserId`, and notification route `userId`. Customer, supplier, account, cost-center, invoice, quotation, and project IDs likewise remain normal business references. Audit Logs still have no public creation endpoint.
+
+This is a deliberate request-contract migration: the removed actor fields are no longer accepted by create/status/post/approve request bodies. Routes, response DTOs, persisted fields, and Domain method signatures remain unchanged.
+
+No test project exists, so this hardening phase did not introduce a new testing framework. Future authorization tests should cover anonymous rejection, authenticated access, JWT-derived actor persistence, actor-field spoofing rejection, configured role-policy denial, workflow audit actors, and notification ownership.
 
 ## Security and infrastructure gaps
 
 - User onboarding, password change/reset, lockout, MFA, and security-stamp invalidation remain undefined and are not exposed.
 - Existing password hashes have no documented algorithm marker outside the hash itself. Login now accepts ASP.NET Core Identity password-hash formats; any legacy format requires an explicit compatibility/migration decision. Users whose persisted Email is null cannot use the email login endpoint.
-- Role-specific policies and segregation-of-duties rules remain unresolved for finance, HR, audit logs, project membership/files, and accounting posting.
-- Request-supplied actor IDs remain temporarily for backward compatibility: project/task/correspondence creators, file uploader, quotation creator/approver, invoice/expense/journal/purchase-invoice creators, payment receiver/poster, voucher payer/poster, and journal poster. They should migrate atomically to `ICurrentUser` after client-contract and delegation/impersonation rules are approved.
+- Persisted role-to-policy mappings and segregation-of-duties rules remain unresolved for finance, HR, audit logs, project membership/files, and accounting posting. Policies therefore enforce authentication but not a fabricated role mapping.
 - The user-scoped Notifications route is authenticated but still needs an ownership-versus-administrator authorization decision.
+- Project-level membership/ACL authorization is not yet defined; authenticated users currently share the same module policy boundary.
+- Quotation rejection/cancellation, invoice issue/cancellation, and cancellation workflows do not have actor columns in the current Domain/schema, so no audit actor can be persisted for those transitions without a later schema/business decision.
+- Workflow timestamps such as `PostedAt` remain caller-supplied to preserve current contracts; only actor identity was hardened in this phase.
 - Project Files still store metadata and `StorageKey` only. No physical storage provider was added.
 - EF RowVersion mappings remain active, but API-level ETag/row-version contracts are not standardized. Concurrency conflicts currently remain infrastructure exceptions handled by the global exception path.
 

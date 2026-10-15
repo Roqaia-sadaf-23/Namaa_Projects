@@ -1,1 +1,1 @@
-namespace Namaa.Api.Contracts.Expenses;public sealed record CreateExpenseRequest(string ExpenseNumber,DateTime ExpenseDate,string Category,string Description,decimal Amount,long CreatedByUserId,long? ProjectId);
+namespace Namaa.Api.Contracts.Expenses;public sealed record CreateExpenseRequest(string ExpenseNumber,DateTime ExpenseDate,string Category,string Description,decimal Amount,long? ProjectId);

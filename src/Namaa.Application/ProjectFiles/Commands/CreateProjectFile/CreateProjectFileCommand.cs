@@ -6,7 +6,6 @@ namespace Namaa.Application.ProjectFiles.Commands.CreateProjectFile;
 
 public sealed record CreateProjectFileCommand(
     long ProjectId,
-    long UploadedByUserId,
     string FileName,
     string StorageKey,
     long FileSizeBytes,

@@ -16,7 +16,7 @@ public sealed class ProjectCorrespondencesController(ISender sender) : Controlle
     [HttpPost]
     public async Task<IActionResult> Create(long projectId, CreateProjectCorrespondenceRequest request, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(new CreateProjectCorrespondenceCommand(projectId, request.CorrespondenceType, request.Subject, request.CorrespondenceDate, request.CreatedByUserId, request.ReferenceNumber, request.Notes), cancellationToken);
+        var result = await sender.Send(new CreateProjectCorrespondenceCommand(projectId, request.CorrespondenceType, request.Subject, request.CorrespondenceDate, request.ReferenceNumber, request.Notes), cancellationToken);
         return result.IsFailure ? result.ToActionResult(this) : CreatedAtAction(nameof(GetById), new { projectId, id = result.Value.Id }, result.Value);
     }
 

@@ -1,5 +1,7 @@
 using MediatR;
+using Namaa.Application.Abstractions.Authentication;
 using Namaa.Application.Abstractions.Persistence;
+using Namaa.Application.Common.Errors;
 using Namaa.Application.ProjectTasks.Dtos;
 using Namaa.Domain.Common.Errors;
 using Namaa.Domain.Common.Results;
@@ -12,6 +14,7 @@ public sealed class CreateProjectTaskCommandHandler(
     IProjectRepository projectRepository,
     IProjectStageRepository projectStageRepository,
     IUserRepository userRepository,
+    ICurrentUser currentUser,
     IApplicationDbContext dbContext)
     : IRequestHandler<CreateProjectTaskCommand, Result<ProjectTaskDto>>
 {
@@ -19,6 +22,9 @@ public sealed class CreateProjectTaskCommandHandler(
         CreateProjectTaskCommand request,
         CancellationToken cancellationToken)
     {
+        if (!currentUser.IsAuthenticated || currentUser.UserId is not long actorUserId)
+            return Result.Failure<ProjectTaskDto>(ApplicationErrors.Unauthenticated);
+
         if (await projectRepository.FindByIdAsync(
                 request.ProjectId,
                 cancellationToken) is null)
@@ -47,7 +53,7 @@ public sealed class CreateProjectTaskCommandHandler(
         }
 
         if (!await userRepository.ExistsByIdAsync(
-                request.CreatedByUserId,
+                actorUserId,
                 cancellationToken))
         {
             return Result.Failure<ProjectTaskDto>(ProjectTaskErrors.CreatedByUserNotFound);
@@ -73,7 +79,7 @@ public sealed class CreateProjectTaskCommandHandler(
         var task = ProjectTask.Create(
             request.ProjectId,
             request.Title,
-            request.CreatedByUserId,
+            actorUserId,
             request.Priority,
             request.Description,
             request.StartDate,

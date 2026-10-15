@@ -1,1 +1,1 @@
-namespace Namaa.Api.Contracts.Payments;public sealed record CreatePaymentRequest(string PaymentNumber,DateTime PaymentDate,Namaa.Domain.Enums.PaymentMethod PaymentMethod,decimal Amount,long ReceivedByUserId,long? InvoiceId,long? CustomerId,string? ReferenceNumber,string? Notes);
+namespace Namaa.Api.Contracts.Payments;public sealed record CreatePaymentRequest(string PaymentNumber,DateTime PaymentDate,Namaa.Domain.Enums.PaymentMethod PaymentMethod,decimal Amount,long? InvoiceId,long? CustomerId,string? ReferenceNumber,string? Notes);

@@ -1,5 +1,6 @@
 using Microsoft.OpenApi.Models;
 using Namaa.Api.Authentication;
+using Namaa.Api.Authorization;
 using Namaa.Api.Middleware;
 using Namaa.Application.Abstractions.Authentication;
 using Namaa.Application;
@@ -9,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // The API composes the layers; use cases and persistence details stay outside HTTP endpoints.
 builder.Services.AddControllers(options =>
-    options.Conventions.Add(new SensitiveControllerAuthorizationConvention()));
+    options.Conventions.Add(new BusinessModuleAuthorizationConvention()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -36,7 +37,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddAuthorization();
+builder.Services.AddNamaaAuthorization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
 builder.Services.AddApplication();

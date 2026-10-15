@@ -5,5 +5,5 @@ using Namaa.Domain.Enums;
 
 namespace Namaa.Application.Projects.Commands.ChangeProjectStatus;
 
-public sealed record ChangeProjectStatusCommand(long ProjectId, ProjectStatus Status, long ChangedByUserId, string? Reason) : IRequest<Result<ProjectDto>>;
+public sealed record ChangeProjectStatusCommand(long ProjectId, ProjectStatus Status, string? Reason) : IRequest<Result<ProjectDto>>;
 

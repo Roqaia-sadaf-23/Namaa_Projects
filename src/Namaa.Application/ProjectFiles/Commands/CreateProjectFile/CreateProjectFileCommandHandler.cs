@@ -1,5 +1,7 @@
 using MediatR;
+using Namaa.Application.Abstractions.Authentication;
 using Namaa.Application.Abstractions.Persistence;
+using Namaa.Application.Common.Errors;
 using Namaa.Application.ProjectFiles.Dtos;
 using Namaa.Domain.Common.Errors;
 using Namaa.Domain.Common.Results;
@@ -11,6 +13,7 @@ public sealed class CreateProjectFileCommandHandler(
     IProjectFileRepository projectFileRepository,
     IProjectRepository projectRepository,
     IUserRepository userRepository,
+    ICurrentUser currentUser,
     IApplicationDbContext dbContext)
     : IRequestHandler<CreateProjectFileCommand, Result<ProjectFileDto>>
 {
@@ -18,6 +21,9 @@ public sealed class CreateProjectFileCommandHandler(
         CreateProjectFileCommand request,
         CancellationToken cancellationToken)
     {
+        if (!currentUser.IsAuthenticated || currentUser.UserId is not long actorUserId)
+            return Result.Failure<ProjectFileDto>(ApplicationErrors.Unauthenticated);
+
         if (await projectRepository.FindByIdAsync(
                 request.ProjectId,
                 cancellationToken) is null)
@@ -26,7 +32,7 @@ public sealed class CreateProjectFileCommandHandler(
         }
 
         if (!await userRepository.ExistsByIdAsync(
-                request.UploadedByUserId,
+                actorUserId,
                 cancellationToken))
         {
             return Result.Failure<ProjectFileDto>(ProjectFileErrors.UploadedByUserNotFound);
@@ -41,7 +47,7 @@ public sealed class CreateProjectFileCommandHandler(
 
         var file = ProjectFile.Create(
             request.ProjectId,
-            request.UploadedByUserId,
+            actorUserId,
             request.FileName,
             request.StorageKey,
             request.FileSizeBytes,

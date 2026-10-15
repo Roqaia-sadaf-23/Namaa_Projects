@@ -1,1 +1,1 @@
-using MediatR;using Namaa.Application.PaymentVouchers.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.PaymentVouchers.Commands.PostPaymentVoucher;public sealed record PostPaymentVoucherCommand(long Id,long PostedByUserId,DateTime PostedAt):IRequest<Result<PaymentVoucherDto>>;
+using MediatR;using Namaa.Application.PaymentVouchers.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.PaymentVouchers.Commands.PostPaymentVoucher;public sealed record PostPaymentVoucherCommand(long Id,DateTime PostedAt):IRequest<Result<PaymentVoucherDto>>;

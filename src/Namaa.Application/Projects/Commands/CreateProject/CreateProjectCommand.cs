@@ -9,7 +9,6 @@ public sealed record CreateProjectCommand(
     string ProjectCode,
     string Name,
     decimal BudgetAmount,
-    long CreatedByUserId,
     long? SourceQuotationId,
     long? ProjectManagerId,
     string? Description,

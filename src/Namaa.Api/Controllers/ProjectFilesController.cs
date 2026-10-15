@@ -26,10 +26,8 @@ public sealed class ProjectFilesController(ISender sender) : ControllerBase
         CreateProjectFileRequest request,
         CancellationToken cancellationToken)
     {
-        // TODO: Source UploadedByUserId from authenticated user claims when authentication is implemented.
         var command = new CreateProjectFileCommand(
             projectId,
-            request.UploadedByUserId,
             request.FileName,
             request.StorageKey,
             request.FileSizeBytes,

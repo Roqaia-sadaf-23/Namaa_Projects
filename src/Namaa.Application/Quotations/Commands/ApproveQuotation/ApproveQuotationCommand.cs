@@ -1,1 +1,1 @@
-using MediatR;using Namaa.Application.Quotations.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Quotations.Commands.ApproveQuotation;public sealed record ApproveQuotationCommand(long Id,long ApprovedByUserId,DateTime ApprovedAt):IRequest<Result<QuotationDto>>;
+using MediatR;using Namaa.Application.Quotations.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Quotations.Commands.ApproveQuotation;public sealed record ApproveQuotationCommand(long Id,DateTime ApprovedAt):IRequest<Result<QuotationDto>>;

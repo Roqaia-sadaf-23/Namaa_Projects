@@ -5,7 +5,6 @@ public sealed record CreateProjectRequest(
     string ProjectCode,
     string Name,
     decimal BudgetAmount,
-    long CreatedByUserId,
     long? SourceQuotationId,
     long? ProjectManagerId,
     string? Description,
