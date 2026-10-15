@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.PaymentVouchers.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.PaymentVouchers.Commands.CancelPaymentVoucher;public sealed record CancelPaymentVoucherCommand(long Id):IRequest<Result<PaymentVoucherDto>>;

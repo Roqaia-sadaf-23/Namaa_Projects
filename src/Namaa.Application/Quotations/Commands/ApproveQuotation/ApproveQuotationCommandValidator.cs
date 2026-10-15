@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Quotations.Commands.ApproveQuotation;public sealed class ApproveQuotationCommandValidator:AbstractValidator<ApproveQuotationCommand>{public ApproveQuotationCommandValidator(){RuleFor(x=>x.Id).GreaterThan(0);RuleFor(x=>x.ApprovedByUserId).GreaterThan(0);}}

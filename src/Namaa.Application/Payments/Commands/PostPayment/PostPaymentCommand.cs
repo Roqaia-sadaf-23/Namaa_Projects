@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Payments.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Payments.Commands.PostPayment;public sealed record PostPaymentCommand(long Id,long PostedByUserId,DateTime PostedAt):IRequest<Result<PaymentDto>>;

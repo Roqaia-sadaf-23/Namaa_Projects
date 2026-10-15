@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Payments.Commands.CancelPayment;public sealed class CancelPaymentCommandValidator:AbstractValidator<CancelPaymentCommand>{public CancelPaymentCommandValidator(){RuleFor(x=>x.Id).GreaterThan(0);}}

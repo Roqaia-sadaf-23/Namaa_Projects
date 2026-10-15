@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Namaa.Api.Contracts.Roles;
 using Namaa.Api.Extensions;
@@ -10,6 +11,7 @@ using Namaa.Application.Roles.Queries.GetRoles;
 namespace Namaa.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/roles")]
 public sealed class RolesController(ISender sender) : ControllerBase
 {

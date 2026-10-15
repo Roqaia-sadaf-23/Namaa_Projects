@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.AuditLogs.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.AuditLogs.Queries.GetAuditLogById;public sealed record GetAuditLogByIdQuery(long Id):IRequest<Result<AuditLogDto>>;

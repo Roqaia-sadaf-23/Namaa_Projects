@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Quotations.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Quotations.Commands.RejectQuotation;public sealed record RejectQuotationCommand(long Id,DateTime RejectedAt):IRequest<Result<QuotationDto>>;

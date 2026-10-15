@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.PurchaseInvoices.Commands.CancelPurchaseInvoice;public sealed class CancelPurchaseInvoiceCommandValidator:AbstractValidator<CancelPurchaseInvoiceCommand>{public CancelPurchaseInvoiceCommandValidator(){RuleFor(x=>x.Id).GreaterThan(0);}}

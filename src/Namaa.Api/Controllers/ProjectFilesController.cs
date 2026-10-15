@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Namaa.Api.Contracts.ProjectFiles;
 using Namaa.Api.Extensions;
@@ -11,6 +12,7 @@ using Namaa.Application.ProjectFiles.Queries.GetProjectFiles;
 namespace Namaa.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/projects/{projectId:long}/files")]
 public sealed class ProjectFilesController(ISender sender) : ControllerBase
 {

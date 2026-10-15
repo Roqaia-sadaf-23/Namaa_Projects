@@ -1,7 +1,14 @@
+using System.Text;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using Namaa.Application.Abstractions.Authentication;
 using Namaa.Application.Abstractions.Persistence;
+using Namaa.Application.Abstractions.Time;
+using Namaa.Infrastructure.Authentication;
 using Namaa.Infrastructure.Persistence;
 using Namaa.Infrastructure.Persistence.Repositories;
 
@@ -27,6 +34,10 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString));
         services.AddScoped<IApplicationDbContext>(serviceProvider =>
             serviceProvider.GetRequiredService<NamaaDbContext>());
+        services.AddSingleton<IUtcClock, SystemUtcClock>();
+        services.AddScoped<IPasswordHasher, AspNetPasswordHasher>();
+        services.AddScoped<ITokenService, JwtTokenService>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<IJournalEntryRepository, JournalEntryRepository>();
@@ -51,6 +62,41 @@ public static class DependencyInjection
         services.AddScoped<IProjectTaskRepository, ProjectTaskRepository>();
         services.AddScoped<IQuotationRepository, QuotationRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+
+        services.AddOptions<JwtOptions>()
+            .Bind(configuration.GetSection(JwtOptions.SectionName))
+            .Validate(options => !string.IsNullOrWhiteSpace(options.Issuer), "Jwt:Issuer is required.")
+            .Validate(options => !string.IsNullOrWhiteSpace(options.Audience), "Jwt:Audience is required.")
+            .Validate(
+                options => Encoding.UTF8.GetByteCount(options.SigningKey ?? string.Empty) >= 32,
+                "Jwt:SigningKey must contain at least 32 bytes.")
+            .Validate(options => options.AccessTokenMinutes > 0, "Jwt:AccessTokenMinutes must be positive.")
+            .Validate(options => options.RefreshTokenDays > 0, "Jwt:RefreshTokenDays must be positive.")
+            .ValidateOnStart();
+
+        var jwtOptions = configuration
+            .GetSection(JwtOptions.SectionName)
+            .Get<JwtOptions>() ?? new JwtOptions();
+
+        services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = jwtOptions.Audience,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtOptions.SigningKey ?? string.Empty)),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromMinutes(1),
+                    NameClaimType = ClaimTypes.NameIdentifier,
+                    RoleClaimType = ClaimTypes.Role
+                };
+            });
 
         return services;
     }

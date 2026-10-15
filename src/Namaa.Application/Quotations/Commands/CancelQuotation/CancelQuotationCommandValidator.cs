@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Quotations.Commands.CancelQuotation;public sealed class CancelQuotationCommandValidator:AbstractValidator<CancelQuotationCommand>{public CancelQuotationCommandValidator(){RuleFor(x=>x.Id).GreaterThan(0);}}

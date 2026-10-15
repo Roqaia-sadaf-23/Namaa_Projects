@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.Payments.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Payments.Commands.CancelPayment;public sealed record CancelPaymentCommand(long Id):IRequest<Result<PaymentDto>>;

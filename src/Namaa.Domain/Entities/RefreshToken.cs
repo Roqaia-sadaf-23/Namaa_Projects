@@ -45,4 +45,18 @@ public class RefreshToken
         RevokedAt = effectiveRevokedAt;
         ReplacedById = replacedById;
     }
+
+    public void RevokeAndReplace(RefreshToken replacement, DateTime? revokedAt = null)
+    {
+        ArgumentNullException.ThrowIfNull(replacement);
+        if (replacement.UserId != UserId)
+            throw new ArgumentException("A replacement token must belong to the same user.", nameof(replacement));
+
+        var effectiveRevokedAt = revokedAt ?? DateTime.UtcNow;
+        if (effectiveRevokedAt < CreatedAt)
+            throw new ArgumentException("Revocation cannot be before token creation.", nameof(revokedAt));
+
+        RevokedAt = effectiveRevokedAt;
+        ReplacedBy = replacement;
+    }
 }

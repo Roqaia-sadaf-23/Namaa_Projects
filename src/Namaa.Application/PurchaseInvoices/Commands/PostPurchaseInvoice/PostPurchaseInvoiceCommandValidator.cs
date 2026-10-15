@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.PurchaseInvoices.Commands.PostPurchaseInvoice;public sealed class PostPurchaseInvoiceCommandValidator:AbstractValidator<PostPurchaseInvoiceCommand>{public PostPurchaseInvoiceCommandValidator(){RuleFor(x=>x.Id).GreaterThan(0);RuleFor(x=>x.PostedByUserId).GreaterThan(0);}}

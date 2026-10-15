@@ -16,6 +16,12 @@ public sealed class UserRepository(NamaaDbContext dbContext) : IUserRepository
     public Task<User?> FindByIdAsync(long id, CancellationToken cancellationToken = default) =>
         dbContext.Users.AsNoTracking().SingleOrDefaultAsync(user => user.Id == id, cancellationToken);
 
+    public Task<User?> FindByEmailWithRoleAsync(string email, CancellationToken cancellationToken = default) =>
+        dbContext.Users
+            .AsNoTracking()
+            .Include(user => user.Role)
+            .SingleOrDefaultAsync(user => user.Email == email, cancellationToken);
+
     public Task<User?> FindForUpdateAsync(long id, CancellationToken cancellationToken = default) =>
         dbContext.Users.SingleOrDefaultAsync(user => user.Id == id, cancellationToken);
 

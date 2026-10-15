@@ -1,0 +1,1 @@
+using MediatR;using Namaa.Application.PurchaseInvoices.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.PurchaseInvoices.Commands.CancelPurchaseInvoice;public sealed record CancelPurchaseInvoiceCommand(long Id):IRequest<Result<PurchaseInvoiceDto>>;

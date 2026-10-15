@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.Quotations.Commands.SendQuotation;public sealed class SendQuotationCommandValidator:AbstractValidator<SendQuotationCommand>{public SendQuotationCommandValidator(){RuleFor(x=>x.Id).GreaterThan(0);}}

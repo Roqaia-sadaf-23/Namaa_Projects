@@ -1,0 +1,1 @@
+using FluentValidation;namespace Namaa.Application.AuditLogs.Queries.GetAuditLogById;public sealed class GetAuditLogByIdQueryValidator:AbstractValidator<GetAuditLogByIdQuery>{public GetAuditLogByIdQueryValidator()=>RuleFor(x=>x.Id).GreaterThan(0);}
