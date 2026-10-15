@@ -85,7 +85,8 @@ public sealed class CustomersController(ISender sender) : ControllerBase
                 request.TaxNumber,
                 request.CommercialRegister,
                 request.Source,
-                request.Notes),
+                request.Notes,
+                request.RowVersion),
             cancellationToken);
 
         return result.ToActionResult(this);

@@ -30,6 +30,6 @@ public sealed class SuppliersController(ISender sender) : ControllerBase
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, UpdateSupplierRequest request, CancellationToken cancellationToken) =>
-        (await sender.Send(new UpdateSupplierCommand(id, request.Name, request.PhoneNumber, request.Email, request.Address, request.City, request.TaxNumber, request.CommercialRegister, request.Notes), cancellationToken)).ToActionResult(this);
+        (await sender.Send(new UpdateSupplierCommand(id, request.Name, request.PhoneNumber, request.Email, request.Address, request.City, request.TaxNumber, request.CommercialRegister, request.Notes, request.RowVersion), cancellationToken)).ToActionResult(this);
 }
 

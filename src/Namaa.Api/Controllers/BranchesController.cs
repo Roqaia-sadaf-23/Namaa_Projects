@@ -30,6 +30,6 @@ public sealed class BranchesController(ISender sender) : ControllerBase
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, UpdateBranchRequest request, CancellationToken cancellationToken) =>
-        (await sender.Send(new UpdateBranchCommand(id, request.Name, request.Address, request.City), cancellationToken)).ToActionResult(this);
+        (await sender.Send(new UpdateBranchCommand(id, request.Name, request.Address, request.City, request.RowVersion), cancellationToken)).ToActionResult(this);
 }
 

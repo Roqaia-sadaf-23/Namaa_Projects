@@ -30,6 +30,6 @@ public sealed class ServicesController(ISender sender) : ControllerBase
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, UpdateServiceRequest request, CancellationToken cancellationToken) =>
-        (await sender.Send(new UpdateServiceCommand(id, request.Name, request.DefaultPrice, request.Category, request.Description), cancellationToken)).ToActionResult(this);
+        (await sender.Send(new UpdateServiceCommand(id, request.Name, request.DefaultPrice, request.Category, request.Description, request.RowVersion), cancellationToken)).ToActionResult(this);
 }
 

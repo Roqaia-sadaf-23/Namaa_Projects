@@ -97,7 +97,8 @@ public sealed class ProjectTasksController(ISender sender) : ControllerBase
             request.DueDate,
             request.AssignedToUserId,
             request.StageId,
-            request.TaskType);
+            request.TaskType,
+            request.RowVersion);
 
         var result = await sender.Send(command, cancellationToken);
 

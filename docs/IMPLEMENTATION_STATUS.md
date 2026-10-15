@@ -87,6 +87,26 @@ Expected missing, duplicate, parent mismatch, invalid workflow state, unbalanced
 
 Repositories or aggregate loading enforce parent scope for project stages, tasks, files, members, correspondences, status history, customer contacts, notifications, and all newly aggregate-managed child data. Quotation items/terms, invoice items, purchase-invoice items, journal lines, and voucher allocations are loaded and mutated only through their parent aggregate.
 
+## Optimistic concurrency status
+
+The persisted model contains exactly 16 concurrency-enabled entities: `Account`, `Branch`, `CostCenter`, `Customer`, `Expense`, `Invoice`, `JournalEntry`, `Payment`, `PaymentVoucher`, `Project`, `ProjectTask`, `PurchaseInvoice`, `Quotation`, `Service`, `Supplier`, and `User`. Each already had a required SQL Server `timestamp` property configured with both `IsRowVersion()` and `IsConcurrencyToken()`; no token was added to another entity and no schema change was made.
+
+- All 16 root DTOs expose `RowVersion` as a Base64 string. Aggregate-child mutation responses expose the refreshed root token as `ParentRowVersion` for invoice items, journal lines, voucher allocations, purchase-invoice items, quotation items, and quotation payment terms.
+- Create requests do not accept a token. Every command that mutates one of the 16 roots implements `IConcurrencyCommand`, and every corresponding API request requires a non-null `RowVersion` string.
+- A shared FluentValidation `ConcurrencyCommandValidator<TCommand>` rejects missing, malformed, or empty Base64 tokens. `ConcurrencyBehavior` defensively decodes the validated value and places a copied byte array into the scoped `IConcurrencyTokenContext` for the duration of the command.
+- `NamaaDbContext` implements `IConcurrencyTokenContext`. Immediately before saving, it finds modified tracked entities whose mapped `RowVersion` property is an EF concurrency token and assigns the client token to that property's `OriginalValue`. SQL Server therefore remains the authoritative compare-and-update boundary; no extra read or in-memory equality check was introduced.
+- `DbUpdateConcurrencyException` is handled centrally by `GlobalExceptionHandler` and returned as `409 Conflict` with code `Concurrency.Conflict` and a non-sensitive reload-and-retry message.
+
+Protected ordinary update requests cover Accounts, Branches, Cost Centers, Customers, Expenses, Invoices, Payments, Projects, Project Tasks, Purchase Invoices, Quotations, Services, Suppliers, and Users. `PaymentVoucher` and `JournalEntry` do not currently have generic update endpoints; all of their existing mutations are protected instead.
+
+Protected aggregate-child operations are invoice-item addition, journal-line addition, payment-voucher allocation, purchase-invoice-item addition, quotation-item addition, and quotation-payment-term addition. Existing parent-scoped repository loading remains unchanged, so a parent mismatch is still `404 Not Found`, while a matching resource with a stale token reaches the database check and becomes `409 Conflict`.
+
+Protected workflow operations are Project status change; Quotation send/approve/reject/cancel; Invoice issue/cancel; Payment post/cancel; PaymentVoucher post/cancel; JournalEntry post; and PurchaseInvoice post/cancel. These workflow responses return the newly generated root token.
+
+No configured disposable database or test project exists, and the task explicitly forbids modifying application data. Consequently, the destructive portion of the suggested live stale-write exercise was not run against the configured application database. Project and Invoice were verified as representative paths by tracing their authenticated API request through an `IConcurrencyCommand`, shared Base64 validation/decoding, tracked aggregate loading, EF `OriginalValue` assignment, awaited `SaveChangesAsync`, refreshed response token, and centralized `DbUpdateConcurrencyException`-to-409 mapping. The safe live acceptance procedure is: read token A, update successfully to token B, retry token A and expect `409`, then read again and confirm the B state remains. This should be executed in an approved disposable environment when test credentials and data are available.
+
+The 16 entities intentionally left without API concurrency tokens are `AuditLog`, `CustomerContact`, `InvoiceItem`, `JournalEntryLine`, `Notification`, `PaymentVoucherAllocation`, `ProjectCorrespondence`, `ProjectFile`, `ProjectMember`, `ProjectStage`, `ProjectStatusHistory`, `PurchaseInvoiceItem`, `QuotationItem`, `QuotationPaymentTerm`, `RefreshToken`, and `Role`.
+
 ## Authentication status
 
 - Email is the persisted login identity; there is no username field. Login failure does not distinguish an unknown email from an invalid password.
@@ -135,7 +155,7 @@ No test project exists, so this hardening phase did not introduce a new testing 
 - Quotation rejection/cancellation, invoice issue/cancellation, and cancellation workflows do not have actor columns in the current Domain/schema, so no audit actor can be persisted for those transitions without a later schema/business decision.
 - Workflow timestamps such as `PostedAt` remain caller-supplied to preserve current contracts; only actor identity was hardened in this phase.
 - Project Files still store metadata and `StorageKey` only. No physical storage provider was added.
-- EF RowVersion mappings remain active, but API-level ETag/row-version contracts are not standardized. Concurrency conflicts currently remain infrastructure exceptions handled by the global exception path.
+- A live two-client concurrency acceptance run remains pending for an approved disposable database because application-data mutation was out of scope for this hardening task.
 
 ## Remaining business decisions
 
@@ -145,12 +165,12 @@ No test project exists, so this hardening phase did not introduce a new testing 
 - Decide whether notification creation is handled by domain events, an outbox, or an application notification service.
 - Define automatic audit-log capture and redaction policy.
 - Select a physical file-storage abstraction and provider.
-- Standardize API concurrency tokens if clients require optimistic-concurrency retry behavior.
+- Decide whether a future HTTP `ETag`/`If-Match` facade should supplement the current JSON Base64 `RowVersion` contract; the present contract is complete and consistent.
 
 ## Database and build safety
 
 - No migration was created or run.
 - No database update was executed.
 - No schema, connection string, credentials, seed data, or application data was modified.
-- Final build command: `dotnet build Namaa.sln -m:1 --artifacts-path .build -p:NuGetAudit=false`
+- Final build command: `dotnet build Namaa.sln -m:1` using isolated artifact output through `UseArtifactsOutput`/`ArtifactsPath` because the normal output can be held by an external process.
 - Final result: **0 warnings, 0 errors**.

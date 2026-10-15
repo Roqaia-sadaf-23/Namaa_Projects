@@ -21,7 +21,7 @@ public sealed class ProjectsController(ISender sender) : ControllerBase
         Namaa.Api.Contracts.Projects.ChangeProjectStatusRequest request,
         CancellationToken cancellationToken) =>
         (await sender.Send(
-            new ChangeProjectStatusCommand(id, request.Status, request.Reason),
+            new ChangeProjectStatusCommand(id, request.Status, request.Reason, request.RowVersion),
             cancellationToken)).ToActionResult(this);
 
     [HttpPost]
@@ -100,7 +100,8 @@ public sealed class ProjectsController(ISender sender) : ControllerBase
                 request.Location,
                 request.StartDate,
                 request.EndDate,
-                request.ProjectManagerId),
+                request.ProjectManagerId,
+                request.RowVersion),
             cancellationToken);
 
         return result.ToActionResult(this);
