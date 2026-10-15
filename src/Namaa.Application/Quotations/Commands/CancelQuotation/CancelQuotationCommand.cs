@@ -1,1 +1,1 @@
-using MediatR;using Namaa.Application.Quotations.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Quotations.Commands.CancelQuotation;public sealed record CancelQuotationCommand(long Id):IRequest<Result<QuotationDto>>;
+using MediatR;using Namaa.Application.Common.Concurrency;using Namaa.Application.Quotations.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Quotations.Commands.CancelQuotation;public sealed record CancelQuotationCommand(long Id,string RowVersion):IRequest<Result<QuotationDto>>,IConcurrencyCommand;

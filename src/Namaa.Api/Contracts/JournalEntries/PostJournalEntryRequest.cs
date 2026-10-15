@@ -1,1 +1,1 @@
-namespace Namaa.Api.Contracts.JournalEntries;public sealed record PostJournalEntryRequest(DateTime PostedAt);
+namespace Namaa.Api.Contracts.JournalEntries;public sealed record PostJournalEntryRequest(DateTime PostedAt,string RowVersion);

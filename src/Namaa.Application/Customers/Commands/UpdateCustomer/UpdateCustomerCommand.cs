@@ -1,5 +1,6 @@
 using MediatR;
 using Namaa.Application.Customers.Dtos;
+using Namaa.Application.Common.Concurrency;
 using Namaa.Domain.Common.Results;
 
 namespace Namaa.Application.Customers.Commands.UpdateCustomer;
@@ -15,4 +16,5 @@ public sealed record UpdateCustomerCommand(
     string? TaxNumber,
     string? CommercialRegister,
     string? Source,
-    string? Notes) : IRequest<Result<CustomerDto>>;
+    string? Notes,
+    string RowVersion) : IRequest<Result<CustomerDto>>, IConcurrencyCommand;

@@ -1,1 +1,1 @@
-using MediatR;using Namaa.Application.Invoices.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Invoices.Commands.CancelInvoice;public sealed record CancelInvoiceCommand(long Id):IRequest<Result<InvoiceDto>>;
+using MediatR;using Namaa.Application.Common.Concurrency;using Namaa.Application.Invoices.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Invoices.Commands.CancelInvoice;public sealed record CancelInvoiceCommand(long Id,string RowVersion):IRequest<Result<InvoiceDto>>,IConcurrencyCommand;

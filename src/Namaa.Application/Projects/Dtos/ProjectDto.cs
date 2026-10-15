@@ -1,5 +1,6 @@
 using Namaa.Domain.Entities;
 using Namaa.Domain.Enums;
+using Namaa.Application.Common.Concurrency;
 
 namespace Namaa.Application.Projects.Dtos;
 
@@ -20,7 +21,8 @@ public sealed record ProjectDto(
     decimal BudgetAmount,
     long CreatedByUserId,
     DateTime CreatedAt,
-    DateTime? UpdatedAt)
+    DateTime? UpdatedAt,
+    string RowVersion)
 {
     internal static ProjectDto FromEntity(Project project) =>
         new(
@@ -40,5 +42,6 @@ public sealed record ProjectDto(
             project.BudgetAmount,
             project.CreatedByUserId,
             project.CreatedAt,
-            project.UpdatedAt);
+            project.UpdatedAt,
+            ConcurrencyToken.Encode(project.RowVersion));
 }

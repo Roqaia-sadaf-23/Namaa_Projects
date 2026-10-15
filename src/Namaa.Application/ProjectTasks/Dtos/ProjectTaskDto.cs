@@ -1,5 +1,6 @@
 using Namaa.Domain.Entities;
 using Namaa.Domain.Enums;
+using Namaa.Application.Common.Concurrency;
 
 namespace Namaa.Application.ProjectTasks.Dtos;
 
@@ -20,7 +21,8 @@ public sealed record ProjectTaskDto(
     DateTime CreatedAt,
     DateTime? UpdatedAt,
     long? StageId,
-    string? TaskType)
+    string? TaskType,
+    string RowVersion)
 {
     internal static ProjectTaskDto FromEntity(ProjectTask task) =>
         new(
@@ -40,5 +42,6 @@ public sealed record ProjectTaskDto(
             task.CreatedAt,
             task.UpdatedAt,
             task.StageId,
-            task.TaskType);
+            task.TaskType,
+            ConcurrencyToken.Encode(task.RowVersion));
 }

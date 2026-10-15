@@ -10,4 +10,5 @@ public sealed record UpdateProjectTaskRequest(
     DateTime? DueDate,
     long? AssignedToUserId,
     long? StageId,
-    string? TaskType);
+    string? TaskType,
+    string RowVersion);

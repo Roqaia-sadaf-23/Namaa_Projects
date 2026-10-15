@@ -7,4 +7,5 @@ public sealed record UpdateProjectRequest(
     string? Location,
     DateTime? StartDate,
     DateTime? EndDate,
-    long? ProjectManagerId);
+    long? ProjectManagerId,
+    string RowVersion);

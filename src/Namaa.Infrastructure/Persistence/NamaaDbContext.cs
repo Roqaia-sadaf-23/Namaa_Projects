@@ -4,8 +4,10 @@ using Namaa.Domain.Entities;
 
 namespace Namaa.Infrastructure.Persistence;
 
-public sealed class NamaaDbContext : DbContext, IApplicationDbContext
+public sealed class NamaaDbContext : DbContext, IApplicationDbContext, IConcurrencyTokenContext
 {
+    private byte[]? _expectedRowVersion;
+
     public NamaaDbContext(DbContextOptions<NamaaDbContext> options)
         : base(options)
     {
@@ -48,5 +50,38 @@ public sealed class NamaaDbContext : DbContext, IApplicationDbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(NamaaDbContext).Assembly);
+    }
+
+    public void UseExpectedRowVersion(byte[] rowVersion)
+    {
+        ArgumentNullException.ThrowIfNull(rowVersion);
+        _expectedRowVersion = rowVersion.ToArray();
+    }
+
+    public void ClearExpectedRowVersion() => _expectedRowVersion = null;
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ApplyExpectedRowVersion();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ApplyExpectedRowVersion()
+    {
+        if (_expectedRowVersion is null)
+        {
+            return;
+        }
+
+        foreach (var entry in ChangeTracker.Entries().Where(entry => entry.State == EntityState.Modified))
+        {
+            var rowVersionProperty = entry.Metadata.FindProperty("RowVersion");
+            if (rowVersionProperty?.IsConcurrencyToken != true || rowVersionProperty.ClrType != typeof(byte[]))
+            {
+                continue;
+            }
+
+            entry.Property("RowVersion").OriginalValue = _expectedRowVersion.ToArray();
+        }
     }
 }

@@ -1,1 +1,1 @@
-using MediatR;using Namaa.Application.Quotations.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Quotations.Commands.SendQuotation;public sealed record SendQuotationCommand(long Id,DateTime SentAt):IRequest<Result<QuotationDto>>;
+using MediatR;using Namaa.Application.Common.Concurrency;using Namaa.Application.Quotations.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Quotations.Commands.SendQuotation;public sealed record SendQuotationCommand(long Id,DateTime SentAt,string RowVersion):IRequest<Result<QuotationDto>>,IConcurrencyCommand;

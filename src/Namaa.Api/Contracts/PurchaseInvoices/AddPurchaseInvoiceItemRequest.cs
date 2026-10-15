@@ -1,1 +1,1 @@
-namespace Namaa.Api.Contracts.PurchaseInvoices;public sealed record AddPurchaseInvoiceItemRequest(string Description,decimal Quantity,decimal UnitPrice,decimal DiscountAmount,decimal TaxAmount,decimal? LineTotal);
+namespace Namaa.Api.Contracts.PurchaseInvoices;public sealed record AddPurchaseInvoiceItemRequest(string Description,decimal Quantity,decimal UnitPrice,decimal DiscountAmount,decimal TaxAmount,decimal? LineTotal,string RowVersion);

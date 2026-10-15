@@ -1,1 +1,1 @@
-using MediatR;using Namaa.Application.Invoices.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Invoices.Commands.IssueInvoice;public sealed record IssueInvoiceCommand(long Id):IRequest<Result<InvoiceDto>>;
+using MediatR;using Namaa.Application.Common.Concurrency;using Namaa.Application.Invoices.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Invoices.Commands.IssueInvoice;public sealed record IssueInvoiceCommand(long Id,string RowVersion):IRequest<Result<InvoiceDto>>,IConcurrencyCommand;

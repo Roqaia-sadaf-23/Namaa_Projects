@@ -34,6 +34,8 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString));
         services.AddScoped<IApplicationDbContext>(serviceProvider =>
             serviceProvider.GetRequiredService<NamaaDbContext>());
+        services.AddScoped<IConcurrencyTokenContext>(serviceProvider =>
+            serviceProvider.GetRequiredService<NamaaDbContext>());
         services.AddSingleton<IUtcClock, SystemUtcClock>();
         services.AddScoped<IPasswordHasher, AspNetPasswordHasher>();
         services.AddScoped<ITokenService, JwtTokenService>();

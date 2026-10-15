@@ -14,6 +14,7 @@ public static class DependencyInjection
         {
             configuration.RegisterServicesFromAssemblyContaining<ApplicationAssemblyMarker>();
             configuration.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            configuration.AddOpenBehavior(typeof(ConcurrencyBehavior<,>));
         });
         services.AddValidatorsFromAssemblyContaining<ApplicationAssemblyMarker>();
 

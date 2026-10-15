@@ -1,1 +1,1 @@
-namespace Namaa.Api.Contracts.PaymentVouchers;public sealed record AddPaymentVoucherAllocationRequest(long PurchaseInvoiceId,decimal AllocatedAmount);
+namespace Namaa.Api.Contracts.PaymentVouchers;public sealed record AddPaymentVoucherAllocationRequest(long PurchaseInvoiceId,decimal AllocatedAmount,string RowVersion);

@@ -1,6 +1,8 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Namaa.Application.Common.Errors;
 
 namespace Namaa.Api.Middleware;
 
@@ -27,6 +29,10 @@ public sealed class GlobalExceptionHandler(
     {
         var (statusCode, title, detail) = exception switch
         {
+            DbUpdateConcurrencyException => (
+                StatusCodes.Status409Conflict,
+                "Conflict.",
+                ApplicationErrors.ConcurrencyConflict.Message),
             ValidationException => (
                 StatusCodes.Status400BadRequest,
                 "Validation failed.",
@@ -67,6 +73,11 @@ public sealed class GlobalExceptionHandler(
             problemDetails.Extensions["errors"] = validationException.Errors
                 .GroupBy(error => error.PropertyName)
                 .ToDictionary(group => group.Key, group => group.Select(error => error.ErrorMessage).ToArray());
+        }
+
+        if (exception is DbUpdateConcurrencyException)
+        {
+            problemDetails.Extensions["code"] = ApplicationErrors.ConcurrencyConflict.Code;
         }
 
         httpContext.Response.StatusCode = statusCode;

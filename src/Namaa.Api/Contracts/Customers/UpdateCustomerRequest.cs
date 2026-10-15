@@ -10,4 +10,5 @@ public sealed record UpdateCustomerRequest(
     string? TaxNumber,
     string? CommercialRegister,
     string? Source,
-    string? Notes);
+    string? Notes,
+    string RowVersion);

@@ -1,5 +1,6 @@
 using MediatR;
 using Namaa.Application.ProjectTasks.Dtos;
+using Namaa.Application.Common.Concurrency;
 using Namaa.Domain.Common.Results;
 using Namaa.Domain.Enums;
 
@@ -15,4 +16,5 @@ public sealed record UpdateProjectTaskCommand(
     DateTime? DueDate,
     long? AssignedToUserId,
     long? StageId,
-    string? TaskType) : IRequest<Result<ProjectTaskDto>>;
+    string? TaskType,
+    string RowVersion) : IRequest<Result<ProjectTaskDto>>, IConcurrencyCommand;

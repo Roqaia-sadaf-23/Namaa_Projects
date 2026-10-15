@@ -1,4 +1,5 @@
 using Namaa.Domain.Entities;
+using Namaa.Application.Common.Concurrency;
 
 namespace Namaa.Application.Customers.Dtos;
 
@@ -17,7 +18,8 @@ public sealed record CustomerDto(
     string? Notes,
     bool IsActive,
     DateTime CreatedAt,
-    DateTime? UpdatedAt)
+    DateTime? UpdatedAt,
+    string RowVersion)
 {
     internal static CustomerDto FromEntity(Customer customer) =>
         new(
@@ -35,5 +37,6 @@ public sealed record CustomerDto(
             customer.Notes,
             customer.IsActive,
             customer.CreatedAt,
-            customer.UpdatedAt);
+            customer.UpdatedAt,
+            ConcurrencyToken.Encode(customer.RowVersion));
 }

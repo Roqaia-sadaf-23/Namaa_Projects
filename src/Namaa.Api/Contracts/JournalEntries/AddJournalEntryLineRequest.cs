@@ -1,1 +1,1 @@
-namespace Namaa.Api.Contracts.JournalEntries;public sealed record AddJournalEntryLineRequest(long AccountId,decimal Debit,decimal Credit,long? BranchId,long? CostCenterId,long? ProjectId,string? Description);
+namespace Namaa.Api.Contracts.JournalEntries;public sealed record AddJournalEntryLineRequest(long AccountId,decimal Debit,decimal Credit,long? BranchId,long? CostCenterId,long? ProjectId,string? Description,string RowVersion);
