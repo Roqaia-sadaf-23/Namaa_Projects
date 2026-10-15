@@ -18,13 +18,6 @@ public sealed class CreateProjectFileCommandHandler(
         CreateProjectFileCommand request,
         CancellationToken cancellationToken)
     {
-        if (await projectFileRepository.ExistsByStorageKeyAsync(
-                request.StorageKey,
-                cancellationToken))
-        {
-            return Result.Failure<ProjectFileDto>(ProjectFileErrors.DuplicateStorageKey);
-        }
-
         if (await projectRepository.FindByIdAsync(
                 request.ProjectId,
                 cancellationToken) is null)
@@ -37,6 +30,13 @@ public sealed class CreateProjectFileCommandHandler(
                 cancellationToken))
         {
             return Result.Failure<ProjectFileDto>(ProjectFileErrors.UploadedByUserNotFound);
+        }
+
+        if (await projectFileRepository.ExistsByStorageKeyAsync(
+                request.StorageKey,
+                cancellationToken))
+        {
+            return Result.Failure<ProjectFileDto>(ProjectFileErrors.DuplicateStorageKey);
         }
 
         var file = ProjectFile.Create(
