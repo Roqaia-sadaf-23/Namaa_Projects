@@ -15,11 +15,13 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
     .CreateBootstrapLogger();
 
+WebApplicationBuilder? builder = null;
+
 try
 {
     Log.Information("Starting Namaa API");
 
-    var builder = WebApplication.CreateBuilder(args);
+    builder = WebApplication.CreateBuilder(args);
 
     builder.Host.UseSerilog((context, _, configuration) =>
         TechnicalLogging.Configure(
@@ -95,6 +97,12 @@ try
 catch (Exception exception)
 {
     Log.Fatal(exception, "Namaa API terminated unexpectedly during startup or execution");
+
+    if (builder?.Environment.IsEnvironment("Testing") == true)
+    {
+        throw;
+    }
+
     Environment.ExitCode = 1;
 }
 finally
@@ -102,3 +110,5 @@ finally
     Log.Information("Namaa API stopped");
     await Log.CloseAndFlushAsync();
 }
+
+public partial class Program;
