@@ -43,7 +43,7 @@ Repositories contain persistence logic only. No repository calls `SaveChangesAsy
 | Procurement & Administration | PurchaseInvoiceItem | Existing child model | Add through PurchaseInvoice aggregate | Loaded by purchase-invoice repository | `POST /api/purchase-invoices/{id}/items`; returned in root DTO | Aggregate-managed |
 | Procurement & Administration | Branch | Existing | Create/update/get/list | Focused repository | `/api/branches` | Complete reference-data surface |
 | Procurement & Administration | Notification | Existing system-owned model | User-scoped list and mark read/unread | Parent-scoped repository | `/api/users/{userId}/notifications` | Intentionally no public create/delete/general update |
-| Procurement & Administration | AuditLog | Existing append-only model | Get-by-id/list with user/entity/date filters | Read-only repository | `/api/audit-logs` | Intentionally no public create/update/delete |
+| Procurement & Administration | AuditLog | Existing append-only model | Central automated write behavior plus get-by-id/list filters | Transactional `EfAuditTrail` writer plus read-only repository | Read-only `/api/audit-logs` | No public create/update/delete; trusted application writes only |
 
 All 32 persisted entities are represented. `DomainGuard` remains an unchanged domain invariant utility and is not a persisted entity.
 
@@ -157,6 +157,29 @@ This is a deliberate request-contract migration: the removed actor fields are no
 
 The focused test project added for optimistic concurrency does not broaden into authentication/authorization testing. Future authorization tests should cover anonymous rejection, authenticated access, JWT-derived actor persistence, actor-field spoofing rejection, configured role-policy denial, workflow audit actors, and notification ownership.
 
+## Technical Logging
+
+- `Namaa.Api` uses Serilog.AspNetCore 10.0.0 with the compatible `net8.0` asset group, Serilog.Sinks.Console 6.1.1, and Serilog.Sinks.File 7.0.0. Serilog is the provider behind `ILogger<T>`; direct static `Log` calls are limited to bootstrap startup, fatal host failure, and shutdown.
+- Configuration is centralized in `TechnicalLogging` and `appsettings*.json`. Structured events are enriched from `LogContext` and with `ApplicationName` and `EnvironmentName`. Defaults are `Information`, with framework and EF database-command noise reduced to `Warning`; the Development override enables `Debug` only for `Namaa` sources.
+- Sinks are console plus `logs/nam-aa-.log`, rolled daily and retained for 14 files. The existing `.gitignore` already excludes `Logs/`, `logs/`, and `*.log`.
+- `UseSerilogRequestLogging` records one completion event containing request method, path, status, and elapsed time. It is the outer request boundary, followed by the existing exception handler, HTTPS redirection, authentication, and authorization. Request bodies, query contents, headers, authorization headers, and token contents are not captured.
+- `GlobalExceptionHandler` remains the authoritative request-exception logger. It records expected request failures as structured warnings and unexpected exceptions as errors; Serilog request logging records the resulting status/duration event without a second stack trace. Bootstrap failures are logged once by the host boundary.
+- No log call or enricher reads plaintext passwords, `PasswordHash`, access/refresh tokens, JWT contents or signing keys, authorization headers, connection strings, database passwords, request bodies, or secret configuration values. EF SQL command logging remains at `Warning`, and sensitive-data logging is not enabled.
+
+## Business Audit Logging
+
+The existing `AuditLog` table/model is reused unchanged. Its actual fields are `Id` (`long`), nullable `UserId`, required `Action`, required `EntityType`, nullable `EntityId`, nullable JSON `OldValues`, nullable JSON `NewValues`, nullable `IpAddress`, and `CreatedAt`. Records expose no public setters or mutation methods. No create, update, or delete AuditLog API exists; the existing read-only get/list endpoints remain protected by `CanViewAuditLogs`.
+
+- `AuditBehavior<TRequest,TResponse>` is the single application-level mechanism. A central command catalog defines stable `<Entity>.<Action>` names and covers all 62 current non-authentication mutation commands. Reads and the login, refresh, and logout commands are intentionally excluded.
+- `IAuditTrail` keeps EF Core out of Application. Its `EfAuditTrail` implementation opens one database transaction, runs the existing handler and its business `SaveChangesAsync`, creates exactly one trusted `AuditLog` only for a successful `Result<T>`, saves that row, and commits. A failed Result is rolled back; validation/authorization failures never enter the behavior; exceptions, cancellation, audit persistence failure, and stale `DbUpdateConcurrencyException` dispose the uncommitted transaction so neither the business write nor a success audit is committed.
+- Actor identity comes exclusively from `ICurrentUser.UserId`. Request user IDs remain business targets only and cannot select the audit actor. The nullable `UserId` schema can represent a deliberately unauthenticated internal invocation without inventing a user ID, although all current business HTTP controllers require authentication.
+- Covered Project Management actions include create/update/status changes plus task, file metadata, member, stage, and correspondence mutations. CRM/Sales covers customer/contact/service/quotation mutations, line/term additions, and quotation workflow transitions. Finance covers accounts, invoices and lines, payments, vouchers and allocations, expenses, journal entries/lines/posting, and cost centers. HR covers role create/update and user profile/role/active-state updates. Procurement covers suppliers, purchase invoices/lines/workflows, and branches. Notification read-state changes are also captured.
+- Safe metadata is intentionally narrow: project status changes store only the destination status, and user updates store only the requested role ID and active flag in `NewValues`. Generic request bodies, full entity snapshots, credentials, tokens, contact details, free-text notes, and authentication data are not serialized. `OldValues` and `IpAddress` remain null because no trustworthy generic before-state or client-address requirement was introduced.
+- Optimistic concurrency remains authoritative. A successful mutation and its audit share the explicit transaction; a stale write produces the existing `409 Conflict` and no success audit record. Audit insertion failures propagate to the existing exception boundary and are not swallowed.
+- Focused tests cover successful/failed mutations, validation short-circuiting, stale-write exceptions, actor spoof resistance, action/entity naming, full catalog coverage, authentication-command exclusion, immutable AuditLog shape, and Serilog initialization without secret configuration enrichment.
+
+Current gaps are intentionally limited: there is no public user-create command to audit as `User.Created`; full before/after capture and IP capture are deferred pending explicit privacy and trust-boundary requirements; and transaction behavior still needs live confirmation against an approved disposable SQL Server database.
+
 ## Security and infrastructure gaps
 
 - User onboarding, password change/reset, lockout, MFA, and security-stamp invalidation remain undefined and are not exposed.
@@ -175,7 +198,7 @@ The focused test project added for optimistic concurrency does not broaden into 
 - Define named authorization policies and segregation-of-duties rules for posting, HR management, notification ownership, and audit access.
 - Decide whether child-line replacement/removal is required before documents leave Draft; the current API supports safe addition and aggregate reads without exposing unsafe independent CRUD.
 - Decide whether notification creation is handled by domain events, an outbox, or an application notification service.
-- Define automatic audit-log capture and redaction policy.
+- Decide whether approved field-level before/after audit metadata or trusted client-IP capture is required; generic snapshots remain intentionally disabled.
 - Select a physical file-storage abstraction and provider.
 - Decide whether a future HTTP `ETag`/`If-Match` facade should supplement the current JSON Base64 `RowVersion` contract; the present contract is complete and consistent.
 
@@ -186,4 +209,4 @@ The focused test project added for optimistic concurrency does not broaden into 
 - No schema, connection string, credentials, seed data, or application data was modified.
 - Final build command: `dotnet build Namaa.sln -m:1`.
 - Final result: **0 warnings, 0 errors**.
-- Final focused test command: `dotnet test tests/Namaa.Tests/Namaa.Tests.csproj --no-build -m:1`; **13 passed, 0 failed, 0 skipped**.
+- Final test command: `dotnet test Namaa.sln -m:1`; **22 passed, 0 failed, 0 skipped**.

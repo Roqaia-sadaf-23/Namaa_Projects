@@ -6,10 +6,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Namaa.Application.Abstractions.Authentication;
+using Namaa.Application.Abstractions.Auditing;
 using Namaa.Application.Abstractions.Persistence;
 using Namaa.Application.Abstractions.Time;
 using Namaa.Infrastructure.Authentication;
 using Namaa.Infrastructure.Persistence;
+using Namaa.Infrastructure.Persistence.Auditing;
 using Namaa.Infrastructure.Persistence.Repositories;
 
 namespace Namaa.Infrastructure;
@@ -36,6 +38,7 @@ public static class DependencyInjection
             serviceProvider.GetRequiredService<NamaaDbContext>());
         services.AddScoped<IConcurrencyTokenContext>(serviceProvider =>
             serviceProvider.GetRequiredService<NamaaDbContext>());
+        services.AddScoped<IAuditTrail, EfAuditTrail>();
         services.AddSingleton<IUtcClock, SystemUtcClock>();
         services.AddScoped<IPasswordHasher, AspNetPasswordHasher>();
         services.AddScoped<ITokenService, JwtTokenService>();

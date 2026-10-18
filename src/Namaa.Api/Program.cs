@@ -1,62 +1,104 @@
+using System.Globalization;
 using Microsoft.OpenApi.Models;
+using Namaa.Api;
 using Namaa.Api.Authentication;
 using Namaa.Api.Authorization;
 using Namaa.Api.Middleware;
 using Namaa.Application.Abstractions.Authentication;
 using Namaa.Application;
 using Namaa.Infrastructure;
- 
-var builder = WebApplication.CreateBuilder(args);
+using Serilog;
+using Serilog.Events;
 
-// The API composes the layers; use cases and persistence details stay outside HTTP endpoints.
-builder.Services.AddControllers(options =>
-    options.Conventions.Add(new BusinessModuleAuthorizationConvention()));
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+    .CreateBootstrapLogger();
+
+try
 {
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    Log.Information("Starting Namaa API");
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.Host.UseSerilog((context, _, configuration) =>
+        TechnicalLogging.Configure(
+            configuration,
+            context.Configuration,
+            context.HostingEnvironment.ApplicationName,
+            context.HostingEnvironment.EnvironmentName));
+
+    // The API composes the layers; use cases and persistence details stay outside HTTP endpoints.
+    builder.Services.AddControllers(options =>
+        options.Conventions.Add(new BusinessModuleAuthorizationConvention()));
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(options =>
     {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Enter a JWT bearer token."
-    });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        [new OpenApiSecurityScheme
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
-            Reference = new OpenApiReference
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Enter a JWT bearer token."
+        });
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecurityScheme
             {
-                Type = ReferenceType.SecurityScheme,
-                Id = "Bearer"
-            }
-        }] = Array.Empty<string>()
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            }] = Array.Empty<string>()
+        });
     });
-});
-builder.Services.AddProblemDetails();
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddNamaaAuthorization();
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddProblemDetails();
+    builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+    builder.Services.AddNamaaAuthorization();
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
+    builder.Services.AddApplication();
+    builder.Services.AddInfrastructure(builder.Configuration);
 
-var app = builder.Build();
+    var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseSerilogRequestLogging(options =>
+    {
+        options.MessageTemplate =
+            "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+        options.GetLevel = (httpContext, _, exception) =>
+            exception is not null || httpContext.Response.StatusCode >= 500
+                ? LogEventLevel.Error
+                : httpContext.Response.StatusCode >= 400
+                    ? LogEventLevel.Warning
+                    : LogEventLevel.Information;
+    });
+
+    app.UseExceptionHandler();
+    app.UseHttpsRedirection();
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapControllers();
+
+    await app.RunAsync();
 }
-
-app.UseHttpsRedirection();
-
-app.UseExceptionHandler();
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+catch (Exception exception)
+{
+    Log.Fatal(exception, "Namaa API terminated unexpectedly during startup or execution");
+    Environment.ExitCode = 1;
+}
+finally
+{
+    Log.Information("Namaa API stopped");
+    await Log.CloseAndFlushAsync();
+}

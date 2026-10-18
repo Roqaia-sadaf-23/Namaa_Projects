@@ -1,6 +1,13 @@
 namespace Namaa.Domain.Common.Results;
 
-public sealed class Result
+public interface IResult
+{
+    bool IsSuccess { get; }
+
+    bool IsFailure { get; }
+}
+
+public sealed class Result : IResult
 {
     private Result(bool isSuccess, Error error)
     {
@@ -42,7 +49,7 @@ public sealed class Result
     }
 }
 
-public sealed class Result<TValue>
+public sealed class Result<TValue> : IResult
 {
     private readonly TValue? _value;
 

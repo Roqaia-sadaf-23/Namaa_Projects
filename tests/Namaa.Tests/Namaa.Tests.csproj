@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Namaa.Api\Namaa.Api.csproj" />
     <ProjectReference Include="..\..\src\Namaa.Application\Namaa.Application.csproj" />
     <ProjectReference Include="..\..\src\Namaa.Infrastructure\Namaa.Infrastructure.csproj" />
   </ItemGroup>
