@@ -20,6 +20,12 @@ public sealed partial class LocalFileStorage : IFileStorage
             new EventId(1, "FileStorageStagingCleanupFailure"),
             "File-storage staging cleanup failed; failure type {FailureType}");
 
+    private static readonly Action<ILogger, string, Exception?> LogStorageKeyRejected =
+        LoggerMessage.Define<string>(
+            LogLevel.Warning,
+            new EventId(2, "FileStorageKeyRejected"),
+            "Rejected an invalid file-storage key; reason {Reason}");
+
     public LocalFileStorage(
         IOptions<FileStorageOptions> options,
         ILogger<LocalFileStorage> logger)
@@ -144,9 +150,17 @@ public sealed partial class LocalFileStorage : IFileStorage
 
     private string ResolveStoragePath(string storageKey)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(storageKey);
+        if (string.IsNullOrWhiteSpace(storageKey))
+        {
+            LogStorageKeyRejected(_logger, "Empty", null);
+            throw new ArgumentException("The storage key is required.", nameof(storageKey));
+        }
+
         if (!StorageKeyRegex().IsMatch(storageKey))
+        {
+            LogStorageKeyRejected(_logger, "InvalidFormat", null);
             throw new ArgumentException("The storage key format is invalid.", nameof(storageKey));
+        }
 
         var relativePath = storageKey.Replace('/', Path.DirectorySeparatorChar);
         var fullPath = Path.GetFullPath(Path.Combine(_root, relativePath));
@@ -157,7 +171,10 @@ public sealed partial class LocalFileStorage : IFileStorage
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
         if (!fullPath.StartsWith(requiredPrefix, comparison))
+        {
+            LogStorageKeyRejected(_logger, "OutsideRoot", null);
             throw new ArgumentException("The storage key resolves outside the storage root.", nameof(storageKey));
+        }
 
         return fullPath;
     }

@@ -184,11 +184,12 @@ public sealed class ProjectFileStorageAcceptanceTests(NamaaApiFixture fixture)
     }
 
     [Fact]
-    public async Task Upload_DangerousFilenameIsNormalizedAndCannotTraverseStorageRoot()
+    public async Task Upload_TraversalFilenameReturns400AndCannotEscapeStorageRoot()
     {
         var project = await fixture.SeedProjectAsync();
         var parent = Directory.GetParent(fixture.StorageRoot)!.FullName;
         var escapedPath = Path.Combine(parent, "escape.txt");
+        var auditCount = await fixture.WithDbContextAsync(db => db.AuditLogs.CountAsync());
         using var client = await fixture.CreateAuthenticatedClientAsync();
         using var response = await UploadAsync(
             client,
@@ -197,10 +198,13 @@ public sealed class ProjectFileStorageAcceptanceTests(NamaaApiFixture fixture)
             "../../escape.txt",
             "text/plain");
 
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var metadata = (await response.Content.ReadFromJsonAsync<ProjectFileDto>())!;
-        Assert.Equal("escape.txt", metadata.FileName);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.False(File.Exists(escapedPath));
+        await fixture.WithDbContextAsync(async db =>
+        {
+            Assert.False(await db.ProjectFiles.AnyAsync(file => file.ProjectId == project.Id));
+            Assert.Equal(auditCount, await db.AuditLogs.CountAsync());
+        });
     }
 
     [Fact]

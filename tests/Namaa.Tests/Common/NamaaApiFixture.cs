@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Namaa.Application.Abstractions.Authentication;
 using Namaa.Application.Authentication.Dtos;
+using Namaa.Application.Common.Authorization;
 using Namaa.Domain.Entities;
 using Namaa.Domain.Enums;
 using Namaa.Infrastructure.Persistence;
@@ -127,14 +128,49 @@ public sealed partial class NamaaApiFixture : IAsyncLifetime
     }
 
     public async Task<AuthTokenDto> LoginAsync(HttpClient client)
+        => await LoginAsync(client, ActiveEmail, Password);
+
+    public static async Task<AuthTokenDto> LoginAsync(
+        HttpClient client,
+        string email,
+        string password)
     {
         using var response = await client.PostAsJsonAsync("/api/auth/login", new
         {
-            Email = ActiveEmail,
-            Password
+            Email = email,
+            Password = password
         });
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<AuthTokenDto>())!;
+    }
+
+    public async Task<(long UserId, string Email, string Password)> SeedActiveUserAsync(
+        string roleName = RoleNames.Administrator)
+    {
+        await using var scope = Factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<NamaaDbContext>();
+        var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+        var roleId = await db.Roles
+            .Where(role => role.Name == roleName)
+            .Select(role => role.Id)
+            .SingleAsync();
+        var email = $"notification-{Guid.NewGuid():N}@example.test";
+        var password = $"T!{Convert.ToBase64String(RandomNumberGenerator.GetBytes(24))}";
+        var user = User.Create(roleId, "Notification acceptance user", email, null, hasher.Hash(password));
+        db.Users.Add(user);
+        await db.SaveChangesAsync();
+        return (user.Id, email, password);
+    }
+
+    public async Task<(long UserId, HttpClient Client)> CreateAuthenticatedClientForRoleAsync(
+        string roleName)
+    {
+        var user = await SeedActiveUserAsync(roleName);
+        var client = CreateClient();
+        var token = await LoginAsync(client, user.Email, user.Password);
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", token.AccessToken);
+        return (user.UserId, client);
     }
 
     public async Task<T> WithDbContextAsync<T>(Func<NamaaDbContext, Task<T>> action)
@@ -266,12 +302,26 @@ public sealed partial class NamaaApiFixture : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<NamaaDbContext>();
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
-        var role = Role.Create("AcceptanceUser", "Test-only authenticated policy role");
-        db.Roles.Add(role);
+        var roles = RoleNames.All
+            .Select(roleName => Role.Create(roleName, "Test-only canonical authorization role"))
+            .ToArray();
+        db.Roles.AddRange(roles);
         await db.SaveChangesAsync();
 
-        var active = User.Create(role.Id, "Active acceptance user", ActiveEmail, null, hasher.Hash(Password));
-        var inactive = User.Create(role.Id, "Inactive acceptance user", InactiveEmail, null, hasher.Hash(Password));
+        var administratorRole = roles.Single(role => role.Name == RoleNames.Administrator);
+
+        var active = User.Create(
+            administratorRole.Id,
+            "Active acceptance user",
+            ActiveEmail,
+            null,
+            hasher.Hash(Password));
+        var inactive = User.Create(
+            administratorRole.Id,
+            "Inactive acceptance user",
+            InactiveEmail,
+            null,
+            hasher.Hash(Password));
         inactive.Deactivate();
         var customer = Customer.Create(NewCode("CUS"), "Acceptance customer");
         db.Users.AddRange(active, inactive);

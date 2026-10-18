@@ -1,1 +1,8 @@
-using MediatR;using Namaa.Application.Notifications.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Notifications.Queries.GetNotifications;public sealed record GetNotificationsQuery(long UserId,bool? IsRead):IRequest<Result<IReadOnlyList<NotificationDto>>>;
+using MediatR;
+using Namaa.Application.Notifications.Dtos;
+using Namaa.Domain.Common.Results;
+
+namespace Namaa.Application.Notifications.Queries.GetNotifications;
+
+public sealed record GetNotificationsQuery(bool? IsRead) :
+    IRequest<Result<IReadOnlyList<NotificationDto>>>;

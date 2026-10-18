@@ -1,1 +1,0 @@
-using FluentValidation;namespace Namaa.Application.Notifications.Queries.GetNotifications;public sealed class GetNotificationsQueryValidator:AbstractValidator<GetNotificationsQuery>{public GetNotificationsQueryValidator()=>RuleFor(x=>x.UserId).GreaterThan(0);}

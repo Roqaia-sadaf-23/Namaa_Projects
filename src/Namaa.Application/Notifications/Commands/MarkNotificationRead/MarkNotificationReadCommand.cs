@@ -1,1 +1,7 @@
-using MediatR;using Namaa.Application.Notifications.Dtos;using Namaa.Domain.Common.Results;namespace Namaa.Application.Notifications.Commands.MarkNotificationRead;public sealed record MarkNotificationReadCommand(long UserId,long Id,bool IsRead):IRequest<Result<NotificationDto>>;
+using MediatR;
+using Namaa.Application.Notifications.Dtos;
+using Namaa.Domain.Common.Results;
+
+namespace Namaa.Application.Notifications.Commands.MarkNotificationRead;
+
+public sealed record MarkNotificationReadCommand(long Id, bool IsRead) : IRequest<Result<NotificationDto>>;

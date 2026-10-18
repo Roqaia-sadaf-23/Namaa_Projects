@@ -39,12 +39,18 @@ public class Notification
 
     public void MarkAsRead(DateTime? readAt = null)
     {
+        if (IsRead)
+            return;
+
         IsRead = true;
         ReadAt = readAt ?? DateTime.UtcNow;
     }
 
     public void MarkAsUnread()
     {
+        if (!IsRead)
+            return;
+
         IsRead = false;
         ReadAt = null;
     }

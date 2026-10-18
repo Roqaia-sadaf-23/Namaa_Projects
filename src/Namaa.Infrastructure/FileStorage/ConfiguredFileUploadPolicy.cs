@@ -33,13 +33,13 @@ public sealed class ConfiguredFileUploadPolicy : IFileUploadPolicy
         if (declaredSizeBytes > _options.MaxFileSizeBytes)
             return Result.Failure<ValidatedFileUpload>(ProjectFileErrors.FileTooLarge);
 
-        if (fileName.Any(char.IsControl))
+        if (fileName.Any(char.IsControl) || ContainsUnsafePath(fileName))
             return Result.Failure<ValidatedFileUpload>(ProjectFileErrors.InvalidFile);
 
         var segments = fileName.Replace('\\', '/').Split(
             '/',
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var safeFileName = segments.LastOrDefault();
+        var safeFileName = segments.LastOrDefault()?.Trim();
         if (string.IsNullOrWhiteSpace(safeFileName) ||
             safeFileName is "." or ".." ||
             safeFileName.Length > 260)
@@ -70,4 +70,47 @@ public sealed class ConfiguredFileUploadPolicy : IFileUploadPolicy
         string.IsNullOrWhiteSpace(extension)
             ? string.Empty
             : extension.StartsWith('.') ? extension.Trim() : $".{extension.Trim()}";
+
+    private static bool ContainsUnsafePath(string fileName)
+    {
+        var valueToInspect = fileName;
+        for (var decodeAttempt = 0; decodeAttempt < 3; decodeAttempt++)
+        {
+            if (IsAbsoluteOrTraversalPath(valueToInspect))
+                return true;
+
+            string decoded;
+            try
+            {
+                decoded = Uri.UnescapeDataString(valueToInspect);
+            }
+            catch (UriFormatException)
+            {
+                return true;
+            }
+            if (decoded.Equals(valueToInspect, StringComparison.Ordinal))
+                break;
+
+            valueToInspect = decoded;
+        }
+
+        return IsAbsoluteOrTraversalPath(valueToInspect);
+    }
+
+    private static bool IsAbsoluteOrTraversalPath(string fileName)
+    {
+        if (fileName.Any(char.IsControl))
+            return true;
+
+        var normalized = fileName.Replace('\\', '/');
+        if (normalized.StartsWith('/') ||
+            (normalized.Length >= 2 && char.IsAsciiLetter(normalized[0]) && normalized[1] == ':'))
+        {
+            return true;
+        }
+
+        return normalized
+            .Split('/', StringSplitOptions.None)
+            .Any(segment => segment is "." or "..");
+    }
 }
