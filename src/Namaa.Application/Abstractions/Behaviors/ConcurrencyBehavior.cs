@@ -28,7 +28,7 @@ public sealed class ConcurrencyBehavior<TRequest, TResponse>(
                 {
                     new ValidationFailure(
                         nameof(IConcurrencyCommand.RowVersion),
-                        "RowVersion is required and must be a valid, non-empty Base64 value.")
+                        "RowVersion is required and must be a valid Base64 value that decodes to exactly 8 bytes.")
                 });
         }
 

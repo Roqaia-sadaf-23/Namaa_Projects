@@ -73,15 +73,28 @@ public sealed class NamaaDbContext : DbContext, IApplicationDbContext, IConcurre
             return;
         }
 
-        foreach (var entry in ChangeTracker.Entries().Where(entry => entry.State == EntityState.Modified))
-        {
-            var rowVersionProperty = entry.Metadata.FindProperty("RowVersion");
-            if (rowVersionProperty?.IsConcurrencyToken != true || rowVersionProperty.ClrType != typeof(byte[]))
+        var modifiedRowVersionEntries = ChangeTracker.Entries()
+            .Where(entry => entry.State == EntityState.Modified)
+            .Where(entry =>
             {
-                continue;
-            }
+                var rowVersionProperty = entry.Metadata.FindProperty("RowVersion");
+                return rowVersionProperty?.IsConcurrencyToken == true
+                    && rowVersionProperty.ClrType == typeof(byte[]);
+            })
+            .ToList();
 
-            entry.Property("RowVersion").OriginalValue = _expectedRowVersion.ToArray();
+        if (modifiedRowVersionEntries.Count > 1)
+        {
+            throw new InvalidOperationException(
+                $"The active concurrency token can target exactly one modified RowVersion root, " +
+                $"but {modifiedRowVersionEntries.Count} were found. " +
+                "A command must modify only one RowVersion-enabled root.");
+        }
+
+        if (modifiedRowVersionEntries.Count == 1)
+        {
+            modifiedRowVersionEntries[0].Property("RowVersion").OriginalValue =
+                _expectedRowVersion.ToArray();
         }
     }
 }

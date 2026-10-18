@@ -93,17 +93,29 @@ The persisted model contains exactly 16 concurrency-enabled entities: `Account`,
 
 - All 16 root DTOs expose `RowVersion` as a Base64 string. Aggregate-child mutation responses expose the refreshed root token as `ParentRowVersion` for invoice items, journal lines, voucher allocations, purchase-invoice items, quotation items, and quotation payment terms.
 - Create requests do not accept a token. Every command that mutates one of the 16 roots implements `IConcurrencyCommand`, and every corresponding API request requires a non-null `RowVersion` string.
-- A shared FluentValidation `ConcurrencyCommandValidator<TCommand>` rejects missing, malformed, or empty Base64 tokens. `ConcurrencyBehavior` defensively decodes the validated value and places a copied byte array into the scoped `IConcurrencyTokenContext` for the duration of the command.
-- `NamaaDbContext` implements `IConcurrencyTokenContext`. Immediately before saving, it finds modified tracked entities whose mapped `RowVersion` property is an EF concurrency token and assigns the client token to that property's `OriginalValue`. SQL Server therefore remains the authoritative compare-and-update boundary; no extra read or in-memory equality check was introduced.
+- SQL Server `rowversion` is exactly 8 bytes and the API represents it as Base64. A shared FluentValidation `ConcurrencyCommandValidator<TCommand>` rejects null, empty, whitespace, malformed Base64, and any Base64 value that does not decode to exactly 8 bytes. These invalid inputs produce `400 Bad Request`; `ConcurrencyBehavior` repeats the exact-length check defensively and places a copied byte array into the scoped `IConcurrencyTokenContext` for the duration of the command.
+- `NamaaDbContext` implements `IConcurrencyTokenContext`. Immediately before saving, it finds modified tracked entities whose mapped `RowVersion` property is an EF concurrency token and assigns the client token to that property's `OriginalValue`. The ambient token supports exactly one modified RowVersion-enabled root per command. If more than one is found, an `InvalidOperationException` reports the unsupported command design and reaches the existing internal-error path rather than being misreported as a client concurrency conflict. SQL Server remains the authoritative compare-and-update boundary; no extra read or in-memory equality check was introduced.
 - `DbUpdateConcurrencyException` is handled centrally by `GlobalExceptionHandler` and returned as `409 Conflict` with code `Concurrency.Conflict` and a non-sensitive reload-and-retry message.
+- The focused `tests/Namaa.Tests` project covers exact 8-byte token decoding, malformed-token rejection before handler execution, expected-token propagation and cleanup in `ConcurrencyBehavior`, and rejection of multiple modified RowVersion roots for one ambient token. The final run passed all 13 test cases with 0 failures.
 
 Protected ordinary update requests cover Accounts, Branches, Cost Centers, Customers, Expenses, Invoices, Payments, Projects, Project Tasks, Purchase Invoices, Quotations, Services, Suppliers, and Users. `PaymentVoucher` and `JournalEntry` do not currently have generic update endpoints; all of their existing mutations are protected instead.
 
-Protected aggregate-child operations are invoice-item addition, journal-line addition, payment-voucher allocation, purchase-invoice-item addition, quotation-item addition, and quotation-payment-term addition. Existing parent-scoped repository loading remains unchanged, so a parent mismatch is still `404 Not Found`, while a matching resource with a stale token reaches the database check and becomes `409 Conflict`.
+Protected aggregate-child operations are invoice-item addition, journal-line addition, payment-voucher allocation, purchase-invoice-item addition, quotation-item addition, and quotation-payment-term addition. Each command implements `IConcurrencyCommand`, loads the tracked parent root for update, mutates that parent, awaits `SaveChangesAsync`, and only then maps the child DTO from its parent navigation. Its `ParentRowVersion` therefore comes from the refreshed parent token. Existing parent-scoped repository loading remains unchanged, so a parent mismatch is still `404 Not Found`, while a matching resource with a stale token reaches the database check and becomes `409 Conflict`.
 
 Protected workflow operations are Project status change; Quotation send/approve/reject/cancel; Invoice issue/cancel; Payment post/cancel; PaymentVoucher post/cancel; JournalEntry post; and PurchaseInvoice post/cancel. These workflow responses return the newly generated root token.
 
-No configured disposable database or test project exists, and the task explicitly forbids modifying application data. Consequently, the destructive portion of the suggested live stale-write exercise was not run against the configured application database. Project and Invoice were verified as representative paths by tracing their authenticated API request through an `IConcurrencyCommand`, shared Base64 validation/decoding, tracked aggregate loading, EF `OriginalValue` assignment, awaited `SaveChangesAsync`, refreshed response token, and centralized `DbUpdateConcurrencyException`-to-409 mapping. The safe live acceptance procedure is: read token A, update successfully to token B, retry token A and expect `409`, then read again and confirm the B state remains. This should be executed in an approved disposable environment when test credentials and data are available.
+No configured connection string, disposable database, container, or LocalDB data file exists in the repository. Consequently, no live stale-write request was run and no application data was modified. Runtime SQL Server acceptance remains pending for an explicitly approved disposable environment.
+
+Use this exact Swagger/Postman procedure with an authenticated bearer token and disposable Project and Account rows:
+
+1. `GET /api/projects/{id}` and save `rowVersion` as A plus the other returned editable values.
+2. `PUT /api/projects/{id}` with those editable values, one harmless changed field, and `rowVersion: A`; expect `200`, save returned `rowVersion` as B, and verify B differs from A.
+3. Repeat `PUT /api/projects/{id}` with a different harmless change but stale `rowVersion: A`; expect `409` with code `Concurrency.Conflict`.
+4. `GET /api/projects/{id}`; verify the successful step-2 state remains and the stale step-3 request did not overwrite it.
+5. Repeat steps 1-4 for `GET /api/accounts/{id}` and `PUT /api/accounts/{id}`, preserving `accountType`, `isPostingAllowed`, `description`, and `parentAccountId` while changing only `accountName`.
+6. Separately send a malformed or non-8-byte Base64 `rowVersion` and expect `400`; use a nonexistent ID with a valid 8-byte token and expect `404`. Existing authentication/authorization middleware continues to provide `401` and `403` before these handlers where applicable.
+
+All mutation handlers materialize their response DTO after awaited `SaveChangesAsync`, so successful root responses read the store-generated new `RowVersion`; the six aggregate-child responses likewise read the refreshed parent token as `ParentRowVersion`. Live confirmation that B differs from A remains part of the pending disposable-database procedure above.
 
 The 16 entities intentionally left without API concurrency tokens are `AuditLog`, `CustomerContact`, `InvoiceItem`, `JournalEntryLine`, `Notification`, `PaymentVoucherAllocation`, `ProjectCorrespondence`, `ProjectFile`, `ProjectMember`, `ProjectStage`, `ProjectStatusHistory`, `PurchaseInvoiceItem`, `QuotationItem`, `QuotationPaymentTerm`, `RefreshToken`, and `Role`.
 
@@ -143,7 +155,7 @@ The following user IDs intentionally remain request-supplied because they identi
 
 This is a deliberate request-contract migration: the removed actor fields are no longer accepted by create/status/post/approve request bodies. Routes, response DTOs, persisted fields, and Domain method signatures remain unchanged.
 
-No test project exists, so this hardening phase did not introduce a new testing framework. Future authorization tests should cover anonymous rejection, authenticated access, JWT-derived actor persistence, actor-field spoofing rejection, configured role-policy denial, workflow audit actors, and notification ownership.
+The focused test project added for optimistic concurrency does not broaden into authentication/authorization testing. Future authorization tests should cover anonymous rejection, authenticated access, JWT-derived actor persistence, actor-field spoofing rejection, configured role-policy denial, workflow audit actors, and notification ownership.
 
 ## Security and infrastructure gaps
 
@@ -155,7 +167,7 @@ No test project exists, so this hardening phase did not introduce a new testing 
 - Quotation rejection/cancellation, invoice issue/cancellation, and cancellation workflows do not have actor columns in the current Domain/schema, so no audit actor can be persisted for those transitions without a later schema/business decision.
 - Workflow timestamps such as `PostedAt` remain caller-supplied to preserve current contracts; only actor identity was hardened in this phase.
 - Project Files still store metadata and `StorageKey` only. No physical storage provider was added.
-- A live two-client concurrency acceptance run remains pending for an approved disposable database because application-data mutation was out of scope for this hardening task.
+- A live two-client concurrency acceptance run remains pending because no configured disposable SQL Server database is available; the exact procedure is documented above.
 
 ## Remaining business decisions
 
@@ -172,5 +184,6 @@ No test project exists, so this hardening phase did not introduce a new testing 
 - No migration was created or run.
 - No database update was executed.
 - No schema, connection string, credentials, seed data, or application data was modified.
-- Final build command: `dotnet build Namaa.sln -m:1` using isolated artifact output through `UseArtifactsOutput`/`ArtifactsPath` because the normal output can be held by an external process.
+- Final build command: `dotnet build Namaa.sln -m:1`.
 - Final result: **0 warnings, 0 errors**.
+- Final focused test command: `dotnet test tests/Namaa.Tests/Namaa.Tests.csproj --no-build -m:1`; **13 passed, 0 failed, 0 skipped**.

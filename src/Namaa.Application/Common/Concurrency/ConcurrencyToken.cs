@@ -18,7 +18,7 @@ public static class ConcurrencyToken
         }
 
         var buffer = new byte[value.Length];
-        if (!Convert.TryFromBase64String(value, buffer, out var bytesWritten) || bytesWritten == 0)
+        if (!Convert.TryFromBase64String(value, buffer, out var bytesWritten) || bytesWritten != 8)
         {
             return false;
         }
