@@ -7,9 +7,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Namaa.Application.Abstractions.Authentication;
 using Namaa.Application.Abstractions.Auditing;
+using Namaa.Application.Abstractions.FileStorage;
 using Namaa.Application.Abstractions.Persistence;
 using Namaa.Application.Abstractions.Time;
 using Namaa.Infrastructure.Authentication;
+using Namaa.Infrastructure.FileStorage;
 using Namaa.Infrastructure.Persistence;
 using Namaa.Infrastructure.Persistence.Auditing;
 using Namaa.Infrastructure.Persistence.Repositories;
@@ -39,6 +41,20 @@ public static class DependencyInjection
         services.AddScoped<IConcurrencyTokenContext>(serviceProvider =>
             serviceProvider.GetRequiredService<NamaaDbContext>());
         services.AddScoped<IAuditTrail, EfAuditTrail>();
+        services.AddOptions<FileStorageOptions>()
+            .Bind(configuration.GetSection(FileStorageOptions.SectionName))
+            .Validate(
+                options => string.Equals(options.Provider, "Local", StringComparison.OrdinalIgnoreCase),
+                "Only the Local file-storage provider is currently supported.")
+            .Validate(
+                options => options.MaxFileSizeBytes > 0,
+                "FileStorage:MaxFileSizeBytes must be positive.")
+            .Validate(
+                options => string.IsNullOrWhiteSpace(options.LocalRoot) || Path.IsPathRooted(options.LocalRoot),
+                "FileStorage:LocalRoot must be an absolute path when configured.")
+            .ValidateOnStart();
+        services.AddSingleton<IFileUploadPolicy, ConfiguredFileUploadPolicy>();
+        services.AddSingleton<IFileStorage, LocalFileStorage>();
         services.AddSingleton<IUtcClock, SystemUtcClock>();
         services.AddScoped<IPasswordHasher, AspNetPasswordHasher>();
         services.AddScoped<ITokenService, JwtTokenService>();

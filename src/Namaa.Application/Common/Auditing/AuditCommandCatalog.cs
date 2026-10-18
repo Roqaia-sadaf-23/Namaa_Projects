@@ -31,6 +31,7 @@ using Namaa.Application.PaymentVouchers.Commands.PostPaymentVoucher;
 using Namaa.Application.ProjectCorrespondences.Commands.CreateProjectCorrespondence;
 using Namaa.Application.ProjectCorrespondences.Commands.UpdateProjectCorrespondence;
 using Namaa.Application.ProjectFiles.Commands.CreateProjectFile;
+using Namaa.Application.ProjectFiles.Commands.UploadProjectFile;
 using Namaa.Application.ProjectFiles.Commands.UpdateProjectFile;
 using Namaa.Application.ProjectMembers.Commands.AddProjectMember;
 using Namaa.Application.ProjectMembers.Commands.UpdateProjectMember;
@@ -107,6 +108,7 @@ internal static class AuditCommandCatalog
                 AuditEntities.ProjectCorrespondence,
                 AuditActions.Updated),
             [typeof(CreateProjectFileCommand)] = Define(AuditEntities.ProjectFile, AuditActions.MetadataCreated),
+            [typeof(UploadProjectFileCommand)] = Define(AuditEntities.ProjectFile, AuditActions.MetadataCreated),
             [typeof(UpdateProjectFileCommand)] = Define(AuditEntities.ProjectFile, AuditActions.MetadataUpdated),
             [typeof(AddProjectMemberCommand)] = Define(AuditEntities.ProjectMember, AuditActions.Added),
             [typeof(UpdateProjectMemberCommand)] = Define(AuditEntities.ProjectMember, AuditActions.Updated),

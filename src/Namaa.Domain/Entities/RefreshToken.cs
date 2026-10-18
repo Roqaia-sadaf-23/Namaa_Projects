@@ -31,7 +31,10 @@ public class RefreshToken
 
     public static RefreshToken Create(long userId, string tokenHash, DateTime expiresAt)
     {
-        var createdAt = DateTime.UtcNow;
+        var utcNow = DateTime.UtcNow;
+        var createdAt = new DateTime(
+            utcNow.Ticks - (utcNow.Ticks % TimeSpan.TicksPerSecond),
+            DateTimeKind.Utc);
         return new RefreshToken(userId, tokenHash, expiresAt, createdAt);
     }
 

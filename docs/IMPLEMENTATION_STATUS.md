@@ -15,7 +15,7 @@ Repositories contain persistence logic only. No repository calls `SaveChangesAsy
 | Project Management | Project | Existing | Existing plus status-change command | Existing | Existing plus `POST /api/projects/{id}/status` | Complete; history is emitted by the aggregate |
 | Project Management | ProjectStage | Existing | Existing | Existing | Existing nested routes | Complete; parent-scoped repository access |
 | Project Management | ProjectTask | Existing | Existing | Existing | Existing nested routes | Complete; parent-scoped repository access |
-| Project Management | ProjectFile | Existing | Existing | Existing | Existing nested routes | Complete metadata API; physical storage remains external |
+| Project Management | ProjectFile | Existing | Existing | Existing | Protected metadata, upload, and download routes | Complete local physical-storage flow; cloud provider deferred |
 | Project Management | ProjectMember | Existing | Existing | Existing | Existing nested routes | Complete; remains Project Management-owned |
 | Project Management | ProjectCorrespondence | Existing | Create/update/get/list | Focused repository | Project-scoped controller | Complete; schema has no attachment or unique reference constraint |
 | Project Management | ProjectStatusHistory | Existing immutable model | Get-by-id/list only | Read-only repository | Project-scoped read routes | Intentionally no public create/update/delete |
@@ -104,18 +104,9 @@ Protected aggregate-child operations are invoice-item addition, journal-line add
 
 Protected workflow operations are Project status change; Quotation send/approve/reject/cancel; Invoice issue/cancel; Payment post/cancel; PaymentVoucher post/cancel; JournalEntry post; and PurchaseInvoice post/cancel. These workflow responses return the newly generated root token.
 
-No configured connection string, disposable database, container, or LocalDB data file exists in the repository. Consequently, no live stale-write request was run and no application data was modified. Runtime SQL Server acceptance remains pending for an explicitly approved disposable environment.
+The API acceptance suite now proves the concurrency contract against SQL Server LocalDB. It GETs Project and Account tokens, performs an accepted update, verifies the native SQL Server token changes, retries with the stale token, observes `409 Conflict`, and confirms both the accepted state and the single success audit remain unchanged. Malformed Base64 plus decoded lengths 1, 7, and 9 are rejected with `400` before persistence; only the 8-byte transport format reaches the handler.
 
-Use this exact Swagger/Postman procedure with an authenticated bearer token and disposable Project and Account rows:
-
-1. `GET /api/projects/{id}` and save `rowVersion` as A plus the other returned editable values.
-2. `PUT /api/projects/{id}` with those editable values, one harmless changed field, and `rowVersion: A`; expect `200`, save returned `rowVersion` as B, and verify B differs from A.
-3. Repeat `PUT /api/projects/{id}` with a different harmless change but stale `rowVersion: A`; expect `409` with code `Concurrency.Conflict`.
-4. `GET /api/projects/{id}`; verify the successful step-2 state remains and the stale step-3 request did not overwrite it.
-5. Repeat steps 1-4 for `GET /api/accounts/{id}` and `PUT /api/accounts/{id}`, preserving `accountType`, `isPostingAllowed`, `description`, and `parentAccountId` while changing only `accountName`.
-6. Separately send a malformed or non-8-byte Base64 `rowVersion` and expect `400`; use a nonexistent ID with a valid 8-byte token and expect `404`. Existing authentication/authorization middleware continues to provide `401` and `403` before these handlers where applicable.
-
-All mutation handlers materialize their response DTO after awaited `SaveChangesAsync`, so successful root responses read the store-generated new `RowVersion`; the six aggregate-child responses likewise read the refreshed parent token as `ParentRowVersion`. Live confirmation that B differs from A remains part of the pending disposable-database procedure above.
+All mutation handlers materialize their response DTO after awaited `SaveChangesAsync`, so successful root responses read the store-generated new `RowVersion`; the six aggregate-child responses likewise read the refreshed parent token as `ParentRowVersion`.
 
 The 16 entities intentionally left without API concurrency tokens are `AuditLog`, `CustomerContact`, `InvoiceItem`, `JournalEntryLine`, `Notification`, `PaymentVoucherAllocation`, `ProjectCorrespondence`, `ProjectFile`, `ProjectMember`, `ProjectStage`, `ProjectStatusHistory`, `PurchaseInvoiceItem`, `QuotationItem`, `QuotationPaymentTerm`, `RefreshToken`, and `Role`.
 
@@ -178,7 +169,36 @@ The existing `AuditLog` table/model is reused unchanged. Its actual fields are `
 - Optimistic concurrency remains authoritative. A successful mutation and its audit share the explicit transaction; a stale write produces the existing `409 Conflict` and no success audit record. Audit insertion failures propagate to the existing exception boundary and are not swallowed.
 - Focused tests cover successful/failed mutations, validation short-circuiting, stale-write exceptions, actor spoof resistance, action/entity naming, full catalog coverage, authentication-command exclusion, immutable AuditLog shape, and Serilog initialization without secret configuration enrichment.
 
-Current gaps are intentionally limited: there is no public user-create command to audit as `User.Created`; full before/after capture and IP capture are deferred pending explicit privacy and trust-boundary requirements; and transaction behavior still needs live confirmation against an approved disposable SQL Server database.
+Current gaps are intentionally limited: there is no public user-create command to audit as `User.Created`, and full before/after capture and IP capture are deferred pending explicit privacy and trust-boundary requirements. Live SQL Server acceptance now confirms successful business writes and audits commit together while validation failures and stale writes create neither a business overwrite nor a success audit. A deliberately injected audit-sink failure test remains optional because no production-only test seam was added.
+
+## Integration / Acceptance Testing
+
+- Test host: `WebApplicationFactory<Program>` runs the production controller, MediatR, FluentValidation, authentication, authorization, repository, EF Core, exception, audit, concurrency, and Serilog request pipelines. `Program` is exposed only through the minimal public partial entry-point declaration. In `Testing`, startup exceptions are rethrown after fatal logging so host failures are visible to the test runner; production startup behavior is unchanged.
+- Database strategy: the collection fixture creates a random `NamaaAcceptance_<guid>` database, applies the tracked authoritative `Database/NamaaDatabaseSchema.sql` in `GO` batches while deliberately ignoring its fixed `USE [NamaaProjects]` batch, and drops the database after the collection. The default developer path is isolated `(localdb)\MSSQLLocalDB`. CI can set `NAMAA_TEST_SQLSERVER_CONNECTION_STRING` to a dedicated SQL Server instance credential with create/drop-database permission; the fixture discards any catalog in that value, connects to `master`, and still creates its own random database. It never reads `DefaultConnection` or user secrets.
+- Test data and credentials: a random signing key, random password, unique test emails/codes, one test role, active and inactive users, a customer, and scenario-specific records are created only inside the disposable database. Host environment values are restored at fixture teardown. No password, key, token, connection string, or database credential is committed.
+- Isolation: SQL-backed acceptance classes share one disposable database collection and are explicitly non-parallel. Every scenario creates uniquely identified business records and scopes persistence/audit assertions to those records, so tests have no execution-order dependency.
+- Authentication coverage: valid login, generic wrong-password/unknown-user parity, inactive-user rejection, password-hash response exclusion, SHA-256-only refresh-token persistence, refresh rotation with old-token rejection and new-token acceptance, and logout revocation.
+- Authorization coverage: anonymous access returns `401` while the same Project, Account, AuditLog, ProjectFile, and journal-posting paths succeed for a real JWT. Current policies intentionally remain authenticated-only; role-based `403` cases remain pending until authoritative role-to-capability mapping exists.
+- Project/audit coverage: JWT-derived creator identity wins even when an unknown spoofed actor property is supplied, the business row and `Project.Created` audit share the actor, invalid creation changes neither table, and Project stale updates return `409` without overwriting or adding a second success audit.
+- Finance/workflow coverage: Account stale updates use live rowversion behavior; balanced journals post and write `JournalEntry.Posted`; unbalanced journals remain Draft and have no post audit; voucher over-allocation returns `409` with neither allocation nor success audit.
+- Security coverage: a task from project B requested through project A returns `404`; project-file metadata requires authentication and its intentionally hidden `StorageKey` is absent; AuditLog has authenticated GET routes only and POST/PUT/DELETE return `405`; the in-memory Serilog sink sees request events without passwords, bearer/access/refresh tokens, signing keys, authorization values, or connection strings.
+- Count/result: 27 SQL-backed API acceptance cases plus 23 focused/unit cases, for 50 total passing tests. The SQL acceptance cases exercise native SQL Server `timestamp/rowversion`, foreign keys, transactions, persistence, and temporary local file storage rather than EF InMemory or SQLite.
+- Command line: `dotnet build Namaa.sln -m:1`, then `dotnet test Namaa.sln -m:1`. Developers need SQL Server LocalDB; CI should provide `NAMAA_TEST_SQLSERVER_CONNECTION_STRING` without checking credentials into source control.
+- Remaining acceptance gaps: no role-specific `403` matrix exists until role mapping is defined; an injected audit-insert failure test was not added because doing so would require a production test seam; container execution is not needed while LocalDB/dedicated SQL Server is available.
+
+## File Storage
+
+- Architecture: Application defines provider-neutral `IFileStorage`, `IFileUploadPolicy`, safe stored-file metadata, upload orchestration, and download lookup. Infrastructure implements the first provider as `LocalFileStorage`; Domain retains only `ProjectFile` invariants; API owns multipart binding and streamed HTTP responses. The abstraction can later be implemented by Azure Blob Storage, Amazon S3, or another object store without moving filesystem concerns into Application or Domain.
+- Configuration: tracked settings select `FileStorage:Provider=Local`, a 25 MiB (`26214400` byte) maximum, and configurable blocked extensions/content types. `LocalRoot` is intentionally absent from tracked settings. When omitted, the Local provider uses the current account's OS-local application-data directory under `Namaa/ProjectFiles`; deployments can set an absolute `FileStorage__LocalRoot`. Relative configured roots are rejected at startup.
+- Upload: authenticated clients use `POST /api/projects/{projectId}/files/upload` with `multipart/form-data` fields `file` and optional `description`. The former public metadata POST that accepted `StorageKey`, size, uploader, and timestamp assertions was removed; the existing metadata command remains internal for compatibility with trusted application callers only. `UploadedByUserId` comes from `ICurrentUser`.
+- Keys and path safety: the provider generates collision-resistant keys shaped like `objects/<prefix>/<guid>` and never incorporates the original filename, email, or physical root. Resolution accepts only that strict opaque format, canonicalizes the path, and enforces the configured root. Client filenames are stripped to a safe basename, control characters are rejected, and the sanitized metadata filename is used for attachment headers. `StorageKey` and physical paths remain absent from read/upload DTOs and HTTP responses.
+- Validation policy: empty files, declared files over the configured maximum, invalid filename/content-type metadata, and configured blocked executable/script extensions or risky content types return the existing `400 Bad Request` validation result. The Local provider independently counts bytes while copying and stops if the real stream exceeds the maximum, so a false multipart length cannot bypass the limit. Extension and content type are advisory policy signals; no claim is made that client `Content-Type` identifies file contents.
+- Streaming: uploads are read from `IFormFile.OpenReadStream` and copied incrementally with a pooled buffer into a staging file; no production `byte[]`, whole-file `MemoryStream`, Base64 payload, or SQL binary column is used. A completed staging file is atomically moved to its opaque destination. Downloads use `GET /api/projects/{projectId}/files/{id}/download` and return a `FileStreamResult` with the sanitized original name, safe attachment disposition, and stored content type (or `application/octet-stream`).
+- Authorization and scoping: upload, metadata reads/updates, and download retain `CanManageProjects`, which currently requires a real authenticated JWT. The download query performs the existing project-and-file scoped database lookup before opening storage, so a file requested through another project returns `404` without disclosing its existence.
+- Drift and logging: metadata with missing physical content returns a path-free `404` and emits a structured warning containing only project/file identifiers. Storage, download, compensation, and staging-cleanup failures emit structured failure type and safe business identifiers; file bytes, tokens, authorization headers, keys, physical paths, and secret configuration are not logged.
+- Consistency: after storage succeeds, the upload handler persists metadata inside the existing audit transaction. A metadata `SaveChangesAsync` failure triggers best-effort physical deletion and rethrows; cleanup failure is logged without a path. Storage or validation failure returns before metadata/audit creation. Successful upload writes `ProjectFile.MetadataCreated` with the JWT actor and no path, key, or file content. Because SQL and a filesystem cannot share one atomic transaction, a process crash or a later outer audit-commit failure can still leave an orphan; reconciliation/retention tooling is a future operational concern.
+- Deletion: no public DELETE was added because no approved ProjectFile deletion/archive business rule exists. The provider delete operation is currently used only for upload compensation and tests.
+- Tests: eight SQL-backed acceptance cases cover authenticated/anonymous upload, JWT actor, spoofed-key rejection, physical existence, hidden key, streamed download, cross-project `404`, missing content, maximum size, traversal-safe filename normalization, blocked types, audit success/failure behavior, and temporary-root cleanup. A focused handler test forces metadata persistence failure and proves compensation deletes the stored object. Each acceptance run uses a unique OS temporary root and removes it during fixture teardown.
 
 ## Security and infrastructure gaps
 
@@ -189,8 +209,8 @@ Current gaps are intentionally limited: there is no public user-create command t
 - Project-level membership/ACL authorization is not yet defined; authenticated users currently share the same module policy boundary.
 - Quotation rejection/cancellation, invoice issue/cancellation, and cancellation workflows do not have actor columns in the current Domain/schema, so no audit actor can be persisted for those transitions without a later schema/business decision.
 - Workflow timestamps such as `PostedAt` remain caller-supplied to preserve current contracts; only actor identity was hardened in this phase.
-- Project Files still store metadata and `StorageKey` only. No physical storage provider was added.
-- A live two-client concurrency acceptance run remains pending because no configured disposable SQL Server database is available; the exact procedure is documented above.
+- Project Files use protected local physical storage. Public deletion/archive semantics, malware scanning, content signature inspection, retention/reconciliation jobs, and project membership ACLs remain undefined.
+- Role-specific denial, notification ownership, and project-level membership/ACL acceptance remain pending business authorization decisions.
 
 ## Remaining business decisions
 
@@ -199,14 +219,14 @@ Current gaps are intentionally limited: there is no public user-create command t
 - Decide whether child-line replacement/removal is required before documents leave Draft; the current API supports safe addition and aggregate reads without exposing unsafe independent CRUD.
 - Decide whether notification creation is handled by domain events, an outbox, or an application notification service.
 - Decide whether approved field-level before/after audit metadata or trusted client-IP capture is required; generic snapshots remain intentionally disabled.
-- Select a physical file-storage abstraction and provider.
+- Select and configure a production object-storage provider, malware scanning, retention, and orphan reconciliation policy.
 - Decide whether a future HTTP `ETag`/`If-Match` facade should supplement the current JSON Base64 `RowVersion` contract; the present contract is complete and consistent.
 
 ## Database and build safety
 
-- No migration was created or run.
-- No database update was executed.
-- No schema, connection string, credentials, seed data, or application data was modified.
+- No production migration was created or run.
+- No configured application database or production data was used or modified. Tests created and dropped only random disposable databases.
+- No connection string, credential, signing key, or fixed test password was committed.
 - Final build command: `dotnet build Namaa.sln -m:1`.
 - Final result: **0 warnings, 0 errors**.
-- Final test command: `dotnet test Namaa.sln -m:1`; **22 passed, 0 failed, 0 skipped**.
+- Final test command: `dotnet test Namaa.sln -m:1`; **50 passed, 0 failed, 0 skipped**.

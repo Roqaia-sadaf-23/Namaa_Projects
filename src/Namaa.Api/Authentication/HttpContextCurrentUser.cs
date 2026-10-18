@@ -3,7 +3,8 @@ using Namaa.Application.Abstractions.Authentication;
 
 namespace Namaa.Api.Authentication;
 
-public sealed class HttpContextCurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUser
+public sealed class HttpContextCurrentUser(IHttpContextAccessor httpContextAccessor)
+    : ICurrentUser
 {
     private ClaimsPrincipal? Principal => httpContextAccessor.HttpContext?.User;
 

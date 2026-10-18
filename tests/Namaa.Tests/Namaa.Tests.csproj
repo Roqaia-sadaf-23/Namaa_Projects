@@ -4,10 +4,12 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <NuGetAudit>false</NuGetAudit>
+    <NoWarn>$(NoWarn);CA1707;CA1711</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.19" />
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -19,6 +21,12 @@
     <ProjectReference Include="..\..\src\Namaa.Api\Namaa.Api.csproj" />
     <ProjectReference Include="..\..\src\Namaa.Application\Namaa.Application.csproj" />
     <ProjectReference Include="..\..\src\Namaa.Infrastructure\Namaa.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\Database\NamaaDatabaseSchema.sql"
+          Link="Database\NamaaDatabaseSchema.sql"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
