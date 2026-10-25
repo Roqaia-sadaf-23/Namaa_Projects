@@ -1,1 +1,66 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  color-scheme: light;
+  --color-brand-950: #062f2a;
+  --color-brand-900: #0a4038;
+  --color-brand-800: #0b574a;
+  --color-brand-700: #0f766e;
+  --color-brand-600: #0d9488;
+  --color-accent-500: #43c59e;
+  --color-accent-100: #dff7ed;
+  --color-ink-950: #13201e;
+  --color-ink-700: #425350;
+  --color-ink-500: #6c7b78;
+  --color-border: #dde7e4;
+  --color-surface: #ffffff;
+  --color-canvas: #f4f7f6;
+  --shadow-soft: 0 18px 50px rgba(6, 47, 42, 0.08);
+  --radius-lg: 1.25rem;
+  --radius-md: 0.875rem;
+  font-family: Inter, "Segoe UI", Tahoma, Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink-950);
+  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgba(67, 197, 158, 0.5);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--color-accent-100);
+  color: var(--color-brand-950);
+}

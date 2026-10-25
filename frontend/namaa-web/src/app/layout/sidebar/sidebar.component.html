@@ -1,0 +1,63 @@
+<aside
+  id="app-sidebar"
+  class="sidebar"
+  [class.collapsed]="collapsed()"
+  [attr.aria-hidden]="mobileOpen() ? null : false"
+>
+  <div class="brand-row">
+    <a class="brand" routerLink="/dashboard" (click)="navigationSelected.emit()">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 42 42" role="img">
+          <path d="M21 34V17" />
+          <path d="M21 21c-7 0-11-4-11-11 7 0 11 4 11 11Z" />
+          <path d="M21 27c0-8 4-13 12-14 0 8-4 13-12 14Z" />
+        </svg>
+      </span>
+      <span class="brand-copy">
+        <strong>{{ language.translate('app.name') }}</strong>
+        <small>{{ language.translate('app.workspace') }}</small>
+      </span>
+    </a>
+
+    <button
+      class="mobile-close"
+      type="button"
+      [attr.aria-label]="language.translate('common.close')"
+      (click)="closeRequested.emit()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m6 6 12 12M18 6 6 18" />
+      </svg>
+    </button>
+  </div>
+
+  <nav class="primary-navigation" [attr.aria-label]="language.translate('common.menu')">
+    <ul>
+      @for (item of navigationItems; track item.path) {
+        <li>
+          <a
+            class="navigation-link"
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            [attr.title]="collapsed() ? language.translate(item.labelKey) : null"
+            (click)="navigationSelected.emit()"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path [attr.d]="item.iconPath" />
+            </svg>
+            <span class="navigation-label">{{ language.translate(item.labelKey) }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span class="status-dot" aria-hidden="true"></span>
+    <div class="footer-copy">
+      <strong>{{ language.translate('common.ready') }}</strong>
+      <span>{{ language.translate('common.noData') }}</span>
+    </div>
+  </div>
+</aside>

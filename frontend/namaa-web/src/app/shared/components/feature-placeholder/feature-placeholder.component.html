@@ -1,0 +1,62 @@
+<section class="feature-page" [attr.aria-labelledby]="sectionId() + '-title'">
+  <div class="hero-card">
+    <div class="hero-copy">
+      <span class="eyebrow">
+        <span aria-hidden="true"></span>
+        {{ language.translate('common.module') }}
+      </span>
+      <h2 [id]="sectionId() + '-title'">{{ language.translate(titleKey()) }}</h2>
+      <p>{{ language.translate(descriptionKey()) }}</p>
+
+      <div class="readiness-badge">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m5 12 4 4L19 6" />
+        </svg>
+        <span>{{ language.translate('common.ready') }}</span>
+      </div>
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="visual-orbit orbit-one"></div>
+      <div class="visual-orbit orbit-two"></div>
+      <div class="visual-core">
+        <svg viewBox="0 0 48 48">
+          <path d="M24 39V20" />
+          <path d="M24 24c-8 0-13-5-13-13 8 0 13 5 13 13Z" />
+          <path d="M24 31c0-10 5-16 15-17 0 10-5 16-15 17Z" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <article class="scope-card">
+      <div class="card-heading">
+        <span class="heading-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M5 6h14M5 12h14M5 18h9" />
+          </svg>
+        </span>
+        <h3>{{ language.translate('common.plannedScope') }}</h3>
+      </div>
+
+      <ul>
+        @for (scopeKey of scopeKeys(); track scopeKey; let index = $index) {
+          <li>
+            <span class="scope-index" aria-hidden="true">{{ index + 1 }}</span>
+            <span>{{ language.translate(scopeKey) }}</span>
+          </li>
+        }
+      </ul>
+    </article>
+
+    <aside class="empty-state" aria-label="Information">
+      <span class="empty-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 8v4m0 4h.01M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18Z" />
+        </svg>
+      </span>
+      <p>{{ language.translate('common.noData') }}</p>
+    </aside>
+  </div>
+</section>
