@@ -1,0 +1,29 @@
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  padding: 20px;
+  background-color: #17324d;
+  color: white;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.app-sidebar {
+  width: 240px;
+  padding: 20px;
+  background-color: #edf2f7;
+}
+
+.app-content {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
+}
