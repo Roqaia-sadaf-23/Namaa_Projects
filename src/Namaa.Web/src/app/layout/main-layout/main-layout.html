@@ -1,16 +1,21 @@
-<div class="app-layout">
-  <header class="app-header">
-    <h1>Namaa Projects</h1>
-  </header>
+<div class="app-layout" dir="rtl">
+  <aside class="sidebar">
+    <h2>نماء Projects</h2>
 
-  <div class="app-body">
-    <aside class="app-sidebar">
-      <h2>Navigation</h2>
-      <p>Sidebar will be here</p>
-    </aside>
+    <nav aria-label="القائمة الرئيسية">
+      <a routerLink="/dashboard" routerLinkActive="active"> لوحة التحكم </a>
 
-    <main class="app-content">
+      <a routerLink="/projects" routerLinkActive="active"> إدارة المشاريع </a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <h3>نظام نماء لإدارة الأعمال</h3>
+    </header>
+
+    <section class="page-content">
       <router-outlet />
-    </main>
-  </div>
+    </section>
+  </main>
 </div>

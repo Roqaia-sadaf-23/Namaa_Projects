@@ -1,29 +1,58 @@
 .app-layout {
+  display: flex;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  font-family: Arial, sans-serif;
 }
 
-.app-header {
-  padding: 20px;
-  background-color: #17324d;
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  background: #173b35;
   color: white;
+  padding: 24px 16px;
+
+  nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 30px;
+
+    a {
+      padding: 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: white;
+
+      &:hover,
+      &.active {
+        background: #286e5e;
+      }
+    }
+  }
 }
 
-.app-body {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-}
-
-.app-sidebar {
-  width: 240px;
-  padding: 20px;
-  background-color: #edf2f7;
-}
-
-.app-content {
+.main-content {
   flex: 1;
   min-width: 0;
+  background: #f5f7f9;
+}
+
+.topbar {
+  background: white;
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.page-content {
   padding: 24px;
+}
+
+@media (max-width: 700px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: auto;
+  }
 }
