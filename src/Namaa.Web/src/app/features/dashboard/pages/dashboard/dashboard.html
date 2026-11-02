@@ -1,2 +1,69 @@
-<h1>لوحة التحكم</h1>
-<p>مرحبًا بك في نظام نماء لإدارة الأعمال.</p>
+<div class="dashboard" dir="rtl">
+  <div class="dashboard-header">
+    <div>
+      <h1>لوحة التحكم</h1>
+      <p>نظرة عامة على مشاريع وأعمال نماء</p>
+    </div>
+
+    <a routerLink="/projects" class="view-projects"> عرض المشاريع </a>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h3>إجمالي المشاريع</h3>
+      <strong>{{ totalProjects() }}</strong>
+    </div>
+
+    <div class="stat-card">
+      <h3>المشاريع النشطة</h3>
+      <strong>{{ activeProjects() }}</strong>
+    </div>
+
+    <div class="stat-card">
+      <h3>المشاريع المكتملة</h3>
+      <strong>{{ completedProjects() }}</strong>
+    </div>
+  </div>
+
+  <section class="projects-section">
+    <h2>آخر المشاريع</h2>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>اسم المشروع</th>
+            <th>العميل</th>
+            <th>الحالة</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (project of projects(); track project.id) {
+            <tr>
+              <td>{{ project.name }}</td>
+              <td>{{ project.client }}</td>
+              <td>
+                @switch (project.status) {
+                  @case ('Active') {
+                    <span class="status active">نشط</span>
+                  }
+                  @case ('Planning') {
+                    <span class="status planning">تخطيط</span>
+                  }
+                  @case ('Completed') {
+                    <span class="status completed">مكتمل</span>
+                  }
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3">لا توجد مشاريع حاليًا</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
