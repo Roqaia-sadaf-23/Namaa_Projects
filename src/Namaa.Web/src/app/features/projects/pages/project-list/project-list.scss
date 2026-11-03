@@ -1,0 +1,15 @@
+.projects-page { padding: 8px; color: #1f2937; }
+.page-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.page-header h1 { margin: 0; font-size: 28px; }
+.page-header p { color: #6b7280; }
+button { border: 0; border-radius: 8px; padding: 10px 16px; background: #19745f; color: white; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid #19745f; outline-offset: 3px; }
+.search-box { display: grid; gap: 8px; margin-bottom: 20px; }
+.search-box span { font-size: 14px; color: #374151; }
+input { width: 100%; max-width: 480px; padding: 12px; border-radius: 8px; border: 1px solid #d1d5db; }
+.table-wrapper { overflow-x: auto; background: white; border: 1px solid #e5e7eb; border-radius: 12px; }
+table { width: 100%; border-collapse: collapse; text-align: right; }
+th, td { padding: 16px; border-bottom: 1px solid #e5e7eb; }
+th { background: #f9fafb; color: #6b7280; }
+.error { border: 1px solid #fecaca; border-radius: 8px; padding: 16px; color: #991b1b; }
+@media (max-width: 600px) { .page-header { align-items: flex-start; flex-direction: column; } }
