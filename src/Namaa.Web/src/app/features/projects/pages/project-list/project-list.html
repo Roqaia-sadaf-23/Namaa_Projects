@@ -1,1 +1,53 @@
-<p>project-list works!</p>
+<div class="projects-page" dir="rtl">
+  <header class="page-header">
+    <div>
+      <h1>إدارة المشاريع</h1>
+      <p>المشاريع المسجلة في نظام نماء</p>
+    </div>
+    <button type="button" (click)="loadProjects()">تحديث</button>
+  </header>
+
+  <label class="search-box">
+    <span>البحث باسم المشروع أو الكود</span>
+    <input type="search" [value]="searchTerm()" (input)="updateSearch($event)"
+           placeholder="ابحث عن مشروع..." />
+  </label>
+
+  @if (loading()) {
+    <p role="status">جاري تحميل المشاريع...</p>
+  } @else if (error(); as message) {
+    <div class="error" role="alert">
+      <p>{{ message }}</p>
+      <button type="button" (click)="loadProjects()">إعادة المحاولة</button>
+    </div>
+  } @else {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>الكود</th>
+            <th>المشروع</th>
+            <th>العميل (ID)</th>
+            <th>الحالة</th>
+            <th>نسبة الإنجاز</th>
+            <th>الميزانية</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (project of filteredProjects(); track project.id) {
+            <tr>
+              <td>{{ project.projectCode }}</td>
+              <td>{{ project.name }}</td>
+              <td>{{ project.customerId }}</td>
+              <td>{{ statusLabels[project.status] ?? 'غير معروفة' }}</td>
+              <td>{{ project.progressPercentage }}%</td>
+              <td>{{ project.budgetAmount }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6">لا توجد مشاريع مطابقة.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
